@@ -21,5 +21,5 @@ class InterpolationAlgorithm(ABC):
 
 
 	@abstractmethod
-	def run_loop(**kwargs):
+	def run(**kwargs):
 		pass

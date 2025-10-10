@@ -5,6 +5,8 @@ from typing import Union
 import subprocess
 import biotite.structure.io as strucio
 import biotite.structure as struc
+from biotite.structure import filter_amino_acids
+from biotite.sequence import ProteinSequence
 from Bio import SeqIO
 import numpy as np
 
@@ -80,6 +82,8 @@ class ProteinMPNNPredictor(SequencePredictor):
         mpnn_mask = np.squeeze(npz_data["mask"]).astype(int)
         prob_dist = prob_dist_raw * mpnn_mask[:, None] # Zero out unmodeled residues
 
+        assert(prob_dist.shape[1] == len(self.alphabet))
+
         try:
             assert(len(modeled_seq) == prob_dist.shape[0])
         except AssertionError as err:
@@ -92,11 +96,11 @@ class ProteinMPNNPredictor(SequencePredictor):
 
         # Package prediction object
         prediction = {
-            'fasta_file': fasta_file,
-            'prob_file': prob_file,
-            'prob_dist': prob_dist,
-            'sequence': sequence,
-            'modeled_seq': modeled_seq,
+            'fasta_file': fasta_file, # File storing sampled sequence
+            'prob_file': prob_file, # File storing probability distribution data
+            'prob_dist': prob_dist, # Probability distribution
+            'sequence': sequence, # Maximum likelihood sequence
+            'modeled_seq': modeled_seq, # Sequence from structure file
         }
 
         return prediction
@@ -140,14 +144,8 @@ class ProteinMPNNPredictor(SequencePredictor):
         """
         structure_path = Path(structure_path)
 
-        # --- Load structure depending on file extension ---
-        if structure_path.suffix.lower() == ".cif":
-            cif_file = CIFFile.read(str(structure_path))
-            atom_array = load_cif_structure(cif_file)
-        elif structure_path.suffix.lower() == ".pdb":
-            atom_array = load_structure(str(structure_path))
-        else:
-            raise ValueError(f"Unsupported file type: {structure_path.suffix}")
+        # --- Load structure ---
+        atom_array = load_structure(structure_path)
 
         # --- Select chain ---
         chain_atoms = atom_array[atom_array.chain_id == chain_id]

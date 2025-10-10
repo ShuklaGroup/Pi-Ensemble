@@ -14,8 +14,8 @@ class SequencePredictor(ABC):
         "sequence": str,
     }
 
-    def predict(self, structure: Union[str, Path], **kwargs) -> dict:
-        result = self._predict_impl(structure, **kwargs)
+    def predict(self, structure, **kwargs) -> dict:
+        result = self._predict(structure, **kwargs)
         self._validate_dict(result)
         return result
 
@@ -33,7 +33,7 @@ class SequencePredictor(ABC):
 
 
     @abstractmethod
-    def _predict(self, structure: Union[str, Path], **kwargs) -> dict:
+    def _predict(self, structure, **kwargs) -> dict:
         """
         Predict the protein sequence from a structure.
         

@@ -1,11 +1,24 @@
 from typing import Union
 from pathlib import Path
+from Bio import SeqIO
 from biotite.structure.io import load_structure
 from biotite.structure.io.pdbx import CIFFile
 from biotite.structure.io.pdbx import get_structure as load_cif_structure
 from biotite.structure import filter_amino_acids
 from biotite.sequence import ProteinSequence
 import numpy as np
+
+
+def read_fasta_first_seq(path: Path) -> str:
+    """
+    Read the first sequence from a FASTA file using Biopython.
+    Returns the sequence as a plain string.
+    """
+    with open(path, "r") as f:
+        records = list(SeqIO.parse(f, "fasta"))
+    if not records:
+        raise ValueError(f"No sequence found in FASTA file: {path}")
+    return str(records[0].seq)
 
 
 def load_modeled_seq(structure_path: Union[str, Path], chain_id: str) -> str:
@@ -65,3 +78,34 @@ def load_modeled_seq(structure_path: Union[str, Path], chain_id: str) -> str:
     seq = ''.join(res_map.get(i, '-') for i in full_range)
 
     return seq
+
+
+def read_alignment_indices(aln_file, ref_seq):
+    """
+    Read alignment from FASTA file.
+    """
+    msa = AlignIO.read(aln_file, "fasta")
+
+    # Find the reference sequence in the alignment
+    ref_record = next((rec for rec in msa if rec.seq.replace("-", "") == ref_seq), None)
+    if ref_record is None:
+        raise ValueError("Reference sequence not found in alignment file.")
+
+    ref_aln = str(ref_record.seq)
+    aligned_seqs = []
+    alignment_indices = []
+
+    for rec in msa:
+        seq_aln = str(rec.seq)
+        aligned_seqs.append(seq_aln)
+        aln_to_seq = []
+        seq_pos = 0
+        for s in seq_aln:
+            if s != '-':
+                aln_to_seq.append(seq_pos)
+                seq_pos += 1
+            else:
+                aln_to_seq.append(None)
+        alignment_indices.append(aln_to_seq)
+
+    return {'aligned_seqs': aligned_seqs[1:], 'index_maps': alignment_indices[1:]} # Exclude ref
