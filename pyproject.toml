@@ -13,6 +13,7 @@ dependencies = [
     "mdtraj",
     "scipy",
     "biopython",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
