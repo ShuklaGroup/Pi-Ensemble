@@ -14,10 +14,22 @@ import numpy as np
 
 class ProteinMPNNPredictor(SequencePredictor):
 
-    def __init__(self, pmpnn_path: Union[str, Path]):
+    def __init__(self, pmpnn_path: Union[str, Path], **kwargs):
+        """
+        Sequence prediction object based on ProteinMPNN.
+        
+        Parameters:
+            **kwargs: Model-specific parameters.
+                temperature (float): sampling temperature (default: 0.1).
+                seed (int): random seed (default: 1).
+                batch_size (int): batch size for ProteinMPNN (defult: 1).
+        """
         
         self.pmpnn_path = Path(pmpnn_path) / "protein_mpnn_run.py"
         self.alphabet = np.asarray(PMPNN_ALPHABET)
+        self.temperature = kwargs.get("temperature", 0.1)
+        self.seed = kwargs.get("seed", 1)
+        self.batch_size = kwargs.get("batch_size", 1)
         
         try:
             assert self.pmpnn_path.exists()
@@ -32,9 +44,6 @@ class ProteinMPNNPredictor(SequencePredictor):
         Parameters:
             structure (str, Path): Path to protein structure.
             **kwargs: Model-specific parameters.
-                temperature (float): sampling temperature (default: 0.1).
-                seed (int): random seed (default: 1).
-                batch_size (int): batch size for ProteinMPNN (defult: 1).
                 chain_id (str): chain ID to use (default: "A").
         
         Returns:
@@ -44,9 +53,6 @@ class ProteinMPNNPredictor(SequencePredictor):
         # Gather parameters
         structure = Path(structure)
         outpath = Path(outpath)
-        temperature = kwargs.get("temperature", 0.1)
-        seed = kwargs.get("seed", 1)
-        batch_size = kwargs.get("batch_size", 1)
         chain_id = kwargs.get("chain_id", "A")
 
 
@@ -65,9 +71,9 @@ class ProteinMPNNPredictor(SequencePredictor):
             '--pdb_path_chains', chain_id,
             '--out_folder', outpath,
             '--num_seq_per_target', "1",
-            "--sampling_temp", str(temperature),
-            "--seed", str(seed),
-            "--batch_size", str(batch_size),
+            "--sampling_temp", str(self.temperature),
+            "--seed", str(self.seed),
+            "--batch_size", str(self.batch_size),
             "--save_probs", 1,
             "--pssm_jsonl", "."
         ],

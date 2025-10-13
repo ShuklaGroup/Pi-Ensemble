@@ -7,12 +7,25 @@ from .base import StructurePredictor
 
 class ESM3Predictor(StructurePredictor):
 
-	def __init__(self, device: Literal["cuda", "cpu"]):
-		try:
-			self.model: ESM3InferenceClient = ESM3.from_pretrained("esm3-open").to(device)
+	def __init__(self, **kwargs):
+        """
+        Structure prediction object based on ESM3.
+        
+        Parameters:
+            **kwargs: Model-specific parameters.
+                device (str): "cpu" or "cuda" (default: "cpu").
+                temperature (float): temperature for structure generation (default: 0.7).
+                num_steps (int): number of steps for denoising (default: 8).
+        """
+		self.device = kwargs.get("device", "cpu")
+        try:
+			self.model: ESM3InferenceClient = ESM3.from_pretrained("esm3-open").to(self.device)
 		except Exception as err:
 			print("ESM3 could not be loaded, ensure weights are available locally.")
 			raise err
+
+        self.temperature = kwargs.get("temperature", 0.7)
+        self.num_steps = kwargs.get("num_steps", 8)
 
 
 	def _predict(self, sequence: str, outpath: Union[Path, str], **kwargs):
@@ -22,23 +35,17 @@ class ESM3Predictor(StructurePredictor):
         Parameters:
             sequence (str): Protein sequence (single-letter amino acids).
             outpath (str, Path): path for predicted structure (e.g., ./output/pred.pdb).
-            **kwargs: Model-specific parameters.
-            	temperature (float): temperature for structure generation (default: 0.7).
-            	num_steps (int): number of steps for denoising (default: 8).
-				confidence_path (Path): path for confidence metrics (e.g., ./output/confidence.json).
-        
+                    
         Returns:
             object: A model-specific structure representation.
         """
         # Gather parameters
         protein = ESMProtein(sequence=sequence)
         outpath = Path(outpath)
-        temperature = kwargs.get("temperature", 0.7)
-        num_steps = kwargs.get("num_steps", 8)
-        confidence_path = kwargs.get("confidence_path", outpath.with_suffix("_confidence.json"))
+        confidence_path = outpath.with_suffix("_confidence.json")
 
         # Predict structure
-        protein = self.model.generate(protein, GenerationConfig(track="structure", num_steps=num_steps, temperature=temperature))
+        protein = self.model.generate(protein, GenerationConfig(track="structure", num_steps=self.num_steps, temperature=self.temperature))
         if outpath.suffix == ".pdb":
         	protein.to_pdb(outpath)
         elif outpath.suffix == ".cif":

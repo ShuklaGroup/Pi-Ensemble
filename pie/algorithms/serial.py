@@ -44,8 +44,8 @@ class SerialInterpolation(InterpolationAlgorithm):
     self.minimize = minimize
 
     if self.cg2all:
-        self.cg2all_environment = kwargs.get("cg2all_env", "cg2all")
-        self.cg2all_device = kwargs.get("cg2all_env", "cpu")
+        self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
+        self.cg2all_device = kwargs.get("cg2all_device", "cpu")
         if self.minimize:
             from openmm.app import *
             from openmm import *
