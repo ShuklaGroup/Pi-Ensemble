@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Literal, Union
+import json
 from esm.models.esm3 import ESM3
 from esm.sdk.api import ESM3InferenceClient, ESMProtein, GenerationConfig
 from .base import StructurePredictor
@@ -70,7 +71,7 @@ class ESM3Predictor(StructurePredictor):
         prediction = {
 			'struct_path': outpath,
 			'sequence': sequence,
-			'confidence': confidence,
+			'confidence': confidence_path,
 		}
 
 		return prediction
