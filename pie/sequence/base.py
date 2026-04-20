@@ -8,11 +8,17 @@ import numpy as np
 class SequencePredictor(ABC):
     """Base class for sequence prediction models."""
 
-    # All concrete classes must return at least these elements with self.predict(...)
+    # All concrete classes must return at least these elements with self._predict()
     REQUIRED_KEYS = {
         "prob_dist": np.ndarray,
         "sequence": str,
     }
+
+    @property
+    @abstractmethod
+    def alphabet(self):
+        """Return the amino-acid alphabet used by this predictor."""
+        pass
 
     def predict(self, structure, **kwargs) -> dict:
         result = self._predict(structure, **kwargs)

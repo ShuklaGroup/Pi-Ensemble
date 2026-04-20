@@ -39,6 +39,8 @@ class BoltzPredictor(StructurePredictor):
         """
         Generate fasta .yaml file to be used by self._predict. Returns path to file.
         """
+        outpath = Path(outpath)
+
         yaml_path = outpath.with_suffix(".yaml")
         msa_mode = kwargs.get("msa_mode", self.msa_mode)
         ligand = kwargs.get("ligand", self.ligand)

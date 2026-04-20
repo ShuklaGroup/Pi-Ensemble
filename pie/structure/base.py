@@ -6,7 +6,7 @@ from pathlib import Path
 class StructurePredictor(ABC):
     """Base class for structure prediction models."""
 
-    # All concrete classes must return at least these elements with self.predict(...)
+    # All concrete classes must return at least these elements with self._predict()
     REQUIRED_KEYS = {
         "struct_path": Path,
         "sequence": str,

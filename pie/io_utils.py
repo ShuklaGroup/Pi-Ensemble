@@ -1,6 +1,6 @@
-from typing import Union
+import typing
 from pathlib import Path
-from Bio import SeqIO
+from Bio import SeqIO, AlignIO
 from biotite.structure.io import load_structure
 from biotite.structure.io.pdbx import CIFFile
 from biotite.structure.io.pdbx import get_structure as load_cif_structure
@@ -21,7 +21,7 @@ def read_fasta_first_seq(path: Path) -> str:
     return str(records[0].seq)
 
 
-def load_modeled_seq(structure_path: Union[str, Path], chain_id: str) -> str:
+def load_modeled_seq(structure_path: typing.Union[str, Path], chain_id: str) -> str:
     """
     Returns a string with the amino acid sequence of a specific chain
     from a PDB or mmCIF file, including '-' characters for unmodeled residues.
@@ -52,20 +52,20 @@ def load_modeled_seq(structure_path: Union[str, Path], chain_id: str) -> str:
         raise ValueError(f"Unsupported file type: {structure_path.suffix}")
 
     # --- Select chain ---
-    chain_atoms = atom_array[atom_array.chain_id == chain_id]
+    chain_atoms = atom_array[atom_array.chain_id == chain_id] # type: ignore
     if chain_atoms.array_length() == 0:
         raise ValueError(f"Chain '{chain_id}' not found in {structure_path}")
 
     # --- Filter for amino acids ---
-    protein_atoms = chain_atoms[filter_amino_acids(chain_atoms)]
+    protein_atoms = chain_atoms[filter_amino_acids(chain_atoms)] # type: ignore
     if protein_atoms.array_length() == 0:
         return ""
 
     # --- Get unique residues ---
     res_ids = protein_atoms.res_id
     res_names = protein_atoms.res_name
-    unique_res_ids, indices = np.unique(res_ids, return_index=True)
-    unique_res_names = res_names[indices]
+    unique_res_ids, indices = np.unique(res_ids, return_index=True) # type: ignore
+    unique_res_names = res_names[indices] # type: ignore
 
     # --- Map residue IDs to 1-letter code ---
     res_map = {

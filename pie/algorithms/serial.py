@@ -1,12 +1,14 @@
 import numpy as np
-from Bio.Align import PairwiseAligner
-from Bio import AlignIO
 from typing import List, Union
 from pathlib import Path
 import tqdm
 import subprocess
+from openmm.app import ForceField, PDBFile, Simulation, NoCutoff
+from openmm import LangevinIntegrator
+from openmm.unit import kelvin, picosecond # type: ignore
 from .base import InterpolationAlgorithm
-from ..session import SessionTracker
+from ..session.session import SessionTracker
+from ..constants import ONE_TO_THREE
 from ..structure.base import StructurePredictor
 from ..sequence.base import SequencePredictor
 from ..io_utils import read_alignment_indices
@@ -28,49 +30,46 @@ class SerialInterpolation(InterpolationAlgorithm):
         template_2: Path,
         chain_id_2: str,
         outpath: Path,
-        cg2all: Bool = False,
-        minimize: Bool = False,
+        cg2all: bool = False,
+        minimize: bool = False,
         **kwargs
     ):
 
-    self.ref_sequence = ref_sequence
-    self.number_steps = number_steps
-    self.mixing_weights = mixing_weights
-    self.structure_model = structure_model
-    self.sequence_model = sequence_model
-    self.outpath = outpath
-    
-    self.cg2all = cg2all
-    self.minimize = minimize
+        self.ref_sequence = ref_sequence
+        self.number_steps = number_steps
+        self.mixing_weights = mixing_weights
+        self.structure_model = structure_model
+        self.sequence_model = sequence_model
+        self.outpath = outpath
+        
+        self.cg2all = cg2all
+        self.minimize = minimize
 
-    if self.cg2all:
-        self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
-        self.cg2all_device = kwargs.get("cg2all_device", "cpu")
-        if self.minimize:
-            from openmm.app import *
-            from openmm import *
-            from openmm.unit import *
-            self.forcefield = ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
+        if self.cg2all:
+            self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
+            self.cg2all_device = kwargs.get("cg2all_device", "cpu")
+            if self.minimize:
+                self.forcefield = ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
 
-    
-    self.template_1 = self._process_template(template_1, chain_id_1)
-    self.template_2 = self._process_template(template_2, chain_id_2)
+        
+        self.template_1 = self._process_template(template_1, chain_id_1)
+        self.template_2 = self._process_template(template_2, chain_id_2)
 
-    self.aln_file = kwargs.get("aln_file", None)
+        self.aln_file = kwargs.get("aln_file", None)
 
-    # self.alignment_map : Dict['aligned_seqs' : List[str], 'index_maps' : List[List[int]]]
-    if self.aln_file is not None:
-        self.alignment_map = read_alignment_indices(self.aln_file, self.ref_sequence)
-    else:
-        seqs = [t['modeled_seq'] for t in (self.template_1, self.template_2)]
-        self.alignment_map = compute_alignment_indices(seqs, self.ref_sequence)
+        # self.alignment_map : Dict['aligned_seqs' : List[str], 'index_maps' : List[List[int]]]
+        if self.aln_file is not None:
+            self.alignment_map = read_alignment_indices(self.aln_file, self.ref_sequence)
+        else:
+            seqs = [t['modeled_seq'] for t in (self.template_1, self.template_2)]
+            self.alignment_map = compute_alignment_indices(seqs, self.ref_sequence)
 
-    self._align_prob_dist()
+        self._align_prob_dist()
 
-    self.logger = SessionTracker()
+        self.logger = SessionTracker()
 
-    self.logger.record("templates", "template_1", self.template_1)
-    self.logger.record("templates", "template_2", self.template_1)
+        self.logger.record("templates", "template_1", self.template_1) # type: ignore
+        self.logger.record("templates", "template_2", self.template_2) # type: ignore
 
 
     def _process_template(self, template: Path, chain_id: str):
@@ -113,11 +112,11 @@ class SerialInterpolation(InterpolationAlgorithm):
 
 
     def predict_sequence(self, structure: dict, outpath: Union[str, Path], **kwargs):
-        return self.sequence_model.predict(structure['struct_path'], outpath, **kwargs)
+        return self.sequence_model.predict(structure['struct_path'], outpath, **kwargs) # type: ignore
 
 
     def predict_structure(self, sequence: str, outpath: Union[str, Path], **kwargs):
-        return self.structure_model.predict(sequence, outpath, **kwargs)
+        return self.structure_model.predict(sequence, outpath, **kwargs) # type: ignore
 
 
     def mix_probabilities(self, seq_1: dict, seq_2: dict, weight: float, **kwargs):
@@ -125,7 +124,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         prob_dist = weight*seq_1['prob_dist'] + (1-weight)*seq_2['prob_dist']
 
         sequence = ''.join(
-            self.sequence_model.alphabet[np.argmax(p)] 
+            self.sequence_model.alphabet[np.argmax(p)]  # type: ignore
             for p in prob_dist
         )
 
@@ -158,11 +157,11 @@ class SerialInterpolation(InterpolationAlgorithm):
                     struct_path = outpath / "structure.pdb"
                     new_struct = self.predict_structure(new_seq, struct_path)
                     generated_structs.append(new_struct)
-                    self.logger.record(f"weight_{repr(weight)}", f"direction_{direction}", f"round_{repr(step)}", "struct_pred", new_struct)
+                    self.logger.record(f"weight_{repr(weight)}", f"direction_{direction}", f"round_{repr(step)}", "struct_pred", new_struct) # type: ignore
 
                     # Predict sequence
                     mobile = self.predict_sequence(new_struct, outpath)
-                    self.logger.record(f"weight_{repr(weight)}", f"direction_{direction}", f"round_{repr(step)}", "seq_pred", mobile)
+                    self.logger.record(f"weight_{repr(weight)}", f"direction_{direction}", f"round_{repr(step)}", "seq_pred", mobile) # type: ignore
 
                 self.logger.save_json(self.outpath / "log.json")
 
@@ -170,7 +169,7 @@ class SerialInterpolation(InterpolationAlgorithm):
             cg2all_outpath = self.outpath / "cg2all"
             for struct in generated_structs:
                 self.extract_backbone_coords_to_pdb(struct, cg2all_outpath)
-            self.cg2all(cg2all_outpath)
+            self.run_cg2all(cg2all_outpath)
 
             if self.minimize:
                 min_outpath = self.outpath / "minimized"
@@ -220,7 +219,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         assert atom_count == expected_atoms, (
             f"Expected {expected_atoms} backbone atoms ({len(self.ref_sequence)} residues), but wrote {atom_count} atoms."
         )
-        assert(outfile.exists(), f"Backbone PDB not created: {outfile}")
+        assert(outfile.exists(), f"Backbone PDB not created: {outfile}") # type: ignore
         return outfile
 
 
@@ -235,7 +234,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         backbone_files = list(folder.glob("*_backbone.pdb"))
 
 
-        for in_pdb in tqdm(backbone_files, desc="Running CG2ALL"):
+        for in_pdb in tqdm(backbone_files, desc="Running CG2ALL"): # type: ignore
             out_pdb = in_pdb.with_name(in_pdb.name.replace("_backbone.pdb", "_allatom.pdb"))
 
             self.cg2all_command = f'''
@@ -245,7 +244,7 @@ class SerialInterpolation(InterpolationAlgorithm):
             '''
 
             result = subprocess.run(
-                command,
+                self.cg2all_command,
                 shell=True,
                 executable="/bin/bash",
                 check=False,
@@ -268,7 +267,7 @@ class SerialInterpolation(InterpolationAlgorithm):
             constraints=None
         )
 
-        integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
+        integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picosecond) # type: ignore
         simulation = Simulation(pdb.topology, system, integrator)
         simulation.context.setPositions(pdb.positions)
 
@@ -292,10 +291,10 @@ class SerialInterpolation(InterpolationAlgorithm):
 
         pdb_files = list(input_dir.glob("*_allatom.pdb"))
 
-        for pdb_file in tqdm(pdb_files, desc="Minimizing structures"):
+        for pdb_file in tqdm(pdb_files, desc="Minimizing structures"): # type: ignore
             out_file = output_dir / f"{pdb_file.stem}_min.pdb"
             try:
-                minimize_pdb(pdb_file, out_file)
+                self.minimize_pdb(pdb_file, out_file)
             except Exception as e:
                 print(f"PDB {pdb_file.name} could not be minimized: {e}")
 

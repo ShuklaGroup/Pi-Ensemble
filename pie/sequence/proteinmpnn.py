@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Union
 import subprocess
 import biotite.structure.io as strucio
-import biotite.structure as struc
 from biotite.structure import filter_amino_acids
 from biotite.sequence import ProteinSequence
 from Bio import SeqIO
@@ -26,7 +25,7 @@ class ProteinMPNNPredictor(SequencePredictor):
         """
         
         self.pmpnn_path = Path(pmpnn_path) / "protein_mpnn_run.py"
-        self.alphabet = np.asarray(PMPNN_ALPHABET)
+        self._alphabet = np.asarray(PMPNN_ALPHABET)
         self.temperature = kwargs.get("temperature", 0.1)
         self.seed = kwargs.get("seed", 1)
         self.batch_size = kwargs.get("batch_size", 1)
@@ -36,6 +35,10 @@ class ProteinMPNNPredictor(SequencePredictor):
         except AssertionError as err:
             print(f"ProteinMPNN prediction script was not found in {self.pmpnn_path}")
             raise err
+
+    @property
+    def alphabet(self):
+        return self._alphabet
 
     def _predict(self, structure: Union[str, Path], outpath: Union[Path, str], **kwargs):
         """
@@ -66,15 +69,15 @@ class ProteinMPNNPredictor(SequencePredictor):
 
         # Predict sequence
         subprocess.run([
-            'python', self.pmpnn_path,
+            'python', str(self.pmpnn_path),
             '--pdb_path', str(structure),
             '--pdb_path_chains', chain_id,
-            '--out_folder', outpath,
+            '--out_folder', str(outpath),
             '--num_seq_per_target', "1",
             "--sampling_temp", str(self.temperature),
             "--seed", str(self.seed),
             "--batch_size", str(self.batch_size),
-            "--save_probs", 1,
+            "--save_probs", "1",
             "--pssm_jsonl", "."
         ],
         check=True)
@@ -92,8 +95,8 @@ class ProteinMPNNPredictor(SequencePredictor):
 
         try:
             assert(len(modeled_seq) == prob_dist.shape[0])
-        except AssertionError as err:
-            raise err("Sequence and probability distribution have mismatching shapes.")
+        except AssertionError:
+            raise AssertionError("Sequence and probability distribution have mismatching shapes.")
 
         sequence = ''.join(
             self.alphabet[np.argmax(p)] if mask else "-"
@@ -116,7 +119,7 @@ class ProteinMPNNPredictor(SequencePredictor):
         """Convert mmcif to pdb for use with ProteinMPNN.
         """
         cif_struct = strucio.load_structure(structure)
-        chain_struct = cif_struct[cif_struct.chain_id == chain_id]
+        chain_struct = cif_struct[cif_struct.chain_id == chain_id] # type: ignore
         new_structure = structure.with_suffix(".pdb")
         strucio.save_structure(new_structure, chain_struct)
         return new_structure
@@ -134,7 +137,7 @@ class ProteinMPNNPredictor(SequencePredictor):
         return str(records[0].seq)
 
 
-    def _read_modeled_seq(structure_path: Union[str, Path], chain_id: str):
+    def _read_modeled_seq(self, structure_path: Union[str, Path], chain_id: str):
         """
         Returns a string with the amino acid sequence of a specific chain
         from a PDB or mmCIF file, including '-' characters for unmodeled residues.
@@ -151,15 +154,15 @@ class ProteinMPNNPredictor(SequencePredictor):
         structure_path = Path(structure_path)
 
         # --- Load structure ---
-        atom_array = load_structure(structure_path)
+        atom_array = strucio.load_structure(structure_path)
 
         # --- Select chain ---
-        chain_atoms = atom_array[atom_array.chain_id == chain_id]
+        chain_atoms = atom_array[atom_array.chain_id == chain_id] # type: ignore
         if chain_atoms.array_length() == 0:
             raise ValueError(f"Chain '{chain_id}' not found in {structure_path}")
 
         # --- Filter for amino acids ---
-        protein_atoms = chain_atoms[filter_amino_acids(chain_atoms)]
+        protein_atoms = chain_atoms[filter_amino_acids(chain_atoms)] # type: ignore
         if protein_atoms.array_length() == 0:
             return ""
 
