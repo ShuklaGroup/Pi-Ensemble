@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import numpy as np
-from typing import List, Union
+from typing import Dict, List, Union
 from pathlib import Path
 import tqdm
 import subprocess
@@ -67,9 +69,8 @@ class SerialInterpolation(InterpolationAlgorithm):
         self._align_prob_dist()
 
         self.logger = SessionTracker()
-
-        self.logger.record("templates", "template_1", self.template_1) # type: ignore
-        self.logger.record("templates", "template_2", self.template_2) # type: ignore
+        self.logger.record("templates", "template_1", data=self._serializable_record(self.template_1))
+        self.logger.record("templates", "template_2", data=self._serializable_record(self.template_2))
 
 
     def _process_template(self, template: Path, chain_id: str):
@@ -100,8 +101,9 @@ class SerialInterpolation(InterpolationAlgorithm):
         self.template_2['index_map'] = index_maps[1]
 
         total_length = len(aligned_seqs[0])
+        alphabet_size = len(self.sequence_model.alphabet) # type: ignore
         for temp in (self.template_1, self.template_2):
-            new_dist = np.zeros((total_length, 21))
+            new_dist = np.zeros((total_length, alphabet_size))
             for i in range(total_length):
                 mapped = temp['index_map'][i]
                 if mapped is not None:
@@ -136,9 +138,8 @@ class SerialInterpolation(InterpolationAlgorithm):
         generated_structs = []
 
         for weight in self.mixing_weights:
-            outpath = self.outpath / f"weight_{repr(weight)}"
             for direction in ['A', 'B']:
-                outpath /= f"direction_{direction}"
+                direction_outpath = self.outpath / f"weight_{repr(weight)}" / f"direction_{direction}"
 
                 if direction == 'A':
                     anchor = self.template_1
@@ -148,20 +149,34 @@ class SerialInterpolation(InterpolationAlgorithm):
                     mobile = self.template_1
 
                 for step in range(1, self.number_steps + 1):
-                    outpath /= f"round_{repr(step)}"
+                    step_outpath = direction_outpath / f"round_{repr(step)}"
+                    step_outpath.mkdir(parents=True, exist_ok=True)
 
                     # Mix probs
                     new_seq = self.mix_probabilities(anchor, mobile, weight)
 
                     # Predict structure
-                    struct_path = outpath / "structure.pdb"
+                    struct_path = step_outpath / "structure.pdb"
                     new_struct = self.predict_structure(new_seq, struct_path)
                     generated_structs.append(new_struct)
-                    self.logger.record(f"weight_{repr(weight)}", f"direction_{direction}", f"round_{repr(step)}", "struct_pred", new_struct) # type: ignore
 
                     # Predict sequence
-                    mobile = self.predict_sequence(new_struct, outpath)
-                    self.logger.record(f"weight_{repr(weight)}", f"direction_{direction}", f"round_{repr(step)}", "seq_pred", mobile) # type: ignore
+                    mobile = self.predict_sequence(new_struct, step_outpath)
+
+                    record = {
+                        **new_struct,
+                        **mobile,
+                        "weight": weight,
+                        "direction": direction,
+                        "step": step,
+                        "source_anchor": str(anchor["struct_path"]),
+                    }
+                    self.logger.record(
+                        f"weight_{repr(weight)}",
+                        f"direction_{direction}",
+                        f"round_{repr(step)}",
+                        data=self._serializable_record(record),
+                    )
 
                 self.logger.save_json(self.outpath / "log.json")
 
@@ -175,6 +190,17 @@ class SerialInterpolation(InterpolationAlgorithm):
                 min_outpath = self.outpath / "minimized"
                 self.run_minimization(cg2all_outpath, min_outpath)
 
+
+    def _serializable_record(self, record: Dict[str, object]) -> Dict[str, object]:
+        serialized: Dict[str, object] = {}
+        for key, value in record.items():
+            if isinstance(value, Path):
+                serialized[key] = str(value)
+            elif isinstance(value, np.ndarray):
+                serialized[key] = value.tolist()
+            else:
+                serialized[key] = value
+        return serialized
 
 
     def extract_backbone_coords_to_pdb(self, structure: dict, outpath: Path):

@@ -1,4 +1,5 @@
 from .serial import SerialInterpolation
+from .batch import BatchInterpolation
 
 
 class AlgorithmRegistry:
@@ -21,3 +22,4 @@ class AlgorithmRegistry:
 
 
 AlgorithmRegistry.register("serial", SerialInterpolation)
+AlgorithmRegistry.register("batch", BatchInterpolation)
