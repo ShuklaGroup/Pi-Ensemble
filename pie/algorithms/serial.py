@@ -201,6 +201,8 @@ class SerialInterpolation(InterpolationAlgorithm):
     def _serializable_record(self, record: Dict[str, object]) -> Dict[str, object]:
         serialized: Dict[str, object] = {}
         for key, value in record.items():
+            if key == "prob_dist":
+                continue
             if isinstance(value, Path):
                 serialized[key] = str(value)
             elif isinstance(value, np.ndarray):
