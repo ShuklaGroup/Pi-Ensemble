@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Union
 
 
 
@@ -12,8 +13,8 @@ class StructurePredictor(ABC):
         "sequence": str,
     }
 
-    def predict(self, sequence: str, **kwargs) -> dict:
-        result = self._predict(sequence, **kwargs)
+    def predict(self, sequence: str, outpath: Union[str, Path], **kwargs) -> dict:
+        result = self._predict(sequence, outpath, **kwargs)
         self._validate_dict(result)
         return result
 
@@ -31,12 +32,13 @@ class StructurePredictor(ABC):
                 
 
     @abstractmethod
-    def _predict(self, sequence: str, **kwargs) -> dict:
+    def _predict(self, sequence: str, outpath: Union[str, Path], **kwargs) -> dict:
         """
         Predict the protein structure from a sequence.
         
         Parameters:
             sequence (str): Protein sequence (single-letter amino acids).
+            outpath (str, Path): Output structure path.
             **kwargs: Model-specific parameters.
         
         Returns:

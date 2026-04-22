@@ -110,7 +110,7 @@ class BoltzPredictor(StructurePredictor):
         tmp_confidence_path = boltz_outdir / f"confidence_{yaml_path.stem}_model_0.json"
 
         shutil.copy(tmp_struct_path, outpath)
-        confidence_path = outpath.with_suffix("_confidence.json")
+        confidence_path = outpath.with_name(f"{outpath.stem}_confidence.json")
         shutil.copy(tmp_confidence_path, confidence_path)
 
         prediction = {

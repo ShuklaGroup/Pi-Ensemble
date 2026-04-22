@@ -43,7 +43,7 @@ class ESM3Predictor(StructurePredictor):
         # Gather parameters
         protein = ESMProtein(sequence=sequence)
         outpath = Path(outpath)
-        confidence_path = outpath.with_suffix("_confidence.json")
+        confidence_path = outpath.with_name(f"{outpath.stem}_confidence.json")
 
         # Predict structure
         protein = self.model.generate(protein, GenerationConfig(track="structure", num_steps=self.num_steps, temperature=self.temperature))

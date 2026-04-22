@@ -24,7 +24,9 @@ class SerialInterpolation(InterpolationAlgorithm):
         self,
         ref_sequence: str,
         number_steps: int, 
-        mixing_weights: List[float], 
+        weight_start: float,
+        weight_end: float,
+        weight_step: float,
         structure_model: StructurePredictor, 
         sequence_model: SequencePredictor,
         template_1: Path,
@@ -39,10 +41,14 @@ class SerialInterpolation(InterpolationAlgorithm):
 
         self.ref_sequence = ref_sequence
         self.number_steps = number_steps
-        self.mixing_weights = mixing_weights
+        if weight_step <= 0:
+            raise ValueError("weight_step must be positive.")
+        if weight_end < weight_start:
+            raise ValueError("weight_end must be greater than or equal to weight_start.")
+        self.mixing_weights = np.arange(weight_start, weight_end + (weight_step / 2.0), weight_step)
         self.structure_model = structure_model
         self.sequence_model = sequence_model
-        self.outpath = outpath
+        self.outpath = Path(outpath)
         
         self.cg2all = cg2all
         self.minimize = minimize
@@ -138,8 +144,9 @@ class SerialInterpolation(InterpolationAlgorithm):
         generated_structs = []
 
         for weight in self.mixing_weights:
+            weight_label = str(float(weight))
             for direction in ['A', 'B']:
-                direction_outpath = self.outpath / f"weight_{repr(weight)}" / f"direction_{direction}"
+                direction_outpath = self.outpath / f"weight_{weight_label}" / f"direction_{direction}"
 
                 if direction == 'A':
                     anchor = self.template_1
@@ -172,7 +179,7 @@ class SerialInterpolation(InterpolationAlgorithm):
                         "source_anchor": str(anchor["struct_path"]),
                     }
                     self.logger.record(
-                        f"weight_{repr(weight)}",
+                        f"weight_{weight_label}",
                         f"direction_{direction}",
                         f"round_{repr(step)}",
                         data=self._serializable_record(record),
@@ -245,7 +252,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         assert atom_count == expected_atoms, (
             f"Expected {expected_atoms} backbone atoms ({len(self.ref_sequence)} residues), but wrote {atom_count} atoms."
         )
-        assert(outfile.exists(), f"Backbone PDB not created: {outfile}") # type: ignore
+        assert outfile.exists(), f"Backbone PDB not created: {outfile}" # type: ignore
         return outfile
 
 

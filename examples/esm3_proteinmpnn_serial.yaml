@@ -18,12 +18,9 @@ interpolation:
   kwargs:
     ref_sequence: "GGGGGGG"
     number_steps: 20
-    mixing_weights:
-      - 0.1
-      - 0.2
-      - 0.3
-      - 0.4
-      - 0.5
+    weight_start: 0.1
+    weight_end: 0.5
+    weight_step: 0.1
     template_1: "template_1.pdb"
     chain_id_1: "A"
     template_2: "template_2.pdb"

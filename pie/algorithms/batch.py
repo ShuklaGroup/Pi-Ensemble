@@ -256,7 +256,7 @@ class BatchInterpolation(InterpolationAlgorithm):
                 for struct_outpath in struct_outpaths:
                     struct_outpath.parent.mkdir(parents=True, exist_ok=True)
 
-                predicted_structures = self.predict_structures(sequence_strings, struct_outpaths)
+                predicted_structures = self.predict_structures(sequence_strings, struct_outpaths) # type: ignore
 
                 for seq_idx, ((sequence, (lam, dist)), new_struct, struct_path) in enumerate(
                     zip(sequences, predicted_structures, struct_outpaths)

@@ -20,8 +20,8 @@ class SequencePredictor(ABC):
         """Return the amino-acid alphabet used by this predictor."""
         pass
 
-    def predict(self, structure, **kwargs) -> dict:
-        result = self._predict(structure, **kwargs)
+    def predict(self, structure: Union[str, Path], outpath: Union[str, Path], **kwargs) -> dict:
+        result = self._predict(structure, outpath, **kwargs)
         self._validate_dict(result)
         return result
 
@@ -39,12 +39,13 @@ class SequencePredictor(ABC):
 
 
     @abstractmethod
-    def _predict(self, structure, **kwargs) -> dict:
+    def _predict(self, structure: Union[str, Path], outpath: Union[str, Path], **kwargs) -> dict:
         """
         Predict the protein sequence from a structure.
         
         Parameters:
             structure (str, Path): Path to protein structure.
+            outpath (str, Path): Output directory for model artifacts.
             **kwargs: Model-specific parameters.
         
         Returns:
