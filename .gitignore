@@ -219,3 +219,6 @@ __marimo__/
 
 # Codex
 .codex
+
+# Sample data files
+samples/

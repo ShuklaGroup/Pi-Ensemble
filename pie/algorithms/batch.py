@@ -109,6 +109,18 @@ class BatchInterpolation(InterpolationAlgorithm):
     def predict_structure(self, sequence: str, outpath: Union[str, Path], **kwargs):
         return self.structure_model.predict(sequence, outpath, **kwargs) # type: ignore
 
+    def predict_structures(
+        self, sequences: List[str], outpaths: List[Union[str, Path]], **kwargs
+    ) -> List[dict]:
+        predict_batch = getattr(self.structure_model, "predict_batch", None)
+        if callable(predict_batch):
+            return predict_batch(sequences, outpaths, **kwargs) # type: ignore
+
+        return [
+            self.predict_structure(sequence, outpath, **kwargs)
+            for sequence, outpath in zip(sequences, outpaths)
+        ]
+
     def mix_probabilities(self, seq_1: dict, seq_2: dict, weight: float, **kwargs):
         prob_1 = seq_1["prob_dist"]
         prob_2 = seq_2["prob_dist"]
@@ -232,17 +244,24 @@ class BatchInterpolation(InterpolationAlgorithm):
                 generated_structs: List[TemplateRecord] = []
                 edit_distances: List[int] = []
 
-                for seq_idx, (sequence, (lam, dist)) in enumerate(sequences):
-                    seq_outpath = (
-                        self.outpath
-                        / f"round_{round_idx}"
-                        / f"direction_{direction}"
-                        / f"sequence_{seq_idx:03d}"
-                    )
-                    seq_outpath.mkdir(parents=True, exist_ok=True)
+                sequence_strings = [sequence for sequence, _ in sequences]
+                struct_outpaths = [
+                    self.outpath
+                    / f"round_{round_idx}"
+                    / f"direction_{direction}"
+                    / f"sequence_{seq_idx:03d}"
+                    / "structure.pdb"
+                    for seq_idx, _ in enumerate(sequences)
+                ]
+                for struct_outpath in struct_outpaths:
+                    struct_outpath.parent.mkdir(parents=True, exist_ok=True)
 
-                    struct_path = seq_outpath / "structure.pdb"
-                    new_struct = self.predict_structure(sequence, struct_path)
+                predicted_structures = self.predict_structures(sequence_strings, struct_outpaths)
+
+                for seq_idx, ((sequence, (lam, dist)), new_struct, struct_path) in enumerate(
+                    zip(sequences, predicted_structures, struct_outpaths)
+                ):
+                    seq_outpath = struct_path.parent
                     seq_pred = self.predict_sequence(new_struct, seq_outpath)
 
                     record: TemplateRecord = {

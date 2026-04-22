@@ -1,0 +1,28 @@
+structure_prediction:
+  model: "esm3"
+  kwargs:
+    device: "cuda"
+    temperature: 0.7
+    num_steps: 8
+
+sequence_prediction:
+  model: "proteinmpnn"
+  kwargs:
+    pmpnn_path: "/opt/ProteinMPNN/"
+    temperature: 0.1 # Irrelevant for current implementation
+    seed: 1
+    batch_size: 1 # Irrelevant for current implementation
+
+interpolation:
+  name: "batch"
+  kwargs:
+    ref_sequence: "GGGGGGG"
+    number_steps: 20
+    min_edit: 1
+    template_1: "template_1.pdb"
+    chain_id_1: "A"
+    template_2: "template_2.pdb"
+    chain_id_2: "A"
+    outpath: "output"
+    # Optional:
+    # aln_file: "alignment.fasta"

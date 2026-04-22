@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, Union
+from typing import List, Literal, Union
 import json
 from esm.models.esm3 import ESM3
 from esm.sdk.api import ESM3InferenceClient, ESMProtein, GenerationConfig
@@ -75,3 +75,18 @@ class ESM3Predictor(StructurePredictor):
         }
 
         return prediction
+
+
+    def predict_batch(self, sequences: list[str], outpaths: list[Union[Path, str]], **kwargs):
+        if not sequences:
+            raise ValueError("At least one protein sequence is required.")
+
+        normalized_outpaths = [Path(path) for path in outpaths]
+        if len(normalized_outpaths) != len(sequences):
+            raise ValueError("Number of output paths must match the number of sequences.")
+
+        predictions = []
+        for sequence, outpath in zip(sequences, normalized_outpaths):
+            predictions.append(self._predict(sequence, outpath, **kwargs))
+
+        return predictions

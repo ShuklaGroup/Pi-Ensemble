@@ -1,7 +1,7 @@
 from .base import StructurePredictor
 from ..mmseqs_query import query_colabfold
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 import shutil
 import subprocess
 
@@ -35,40 +35,59 @@ class BoltzPredictor(StructurePredictor):
             raise FileNotFoundError("The command 'boltz' was not found in the current environment.")
 
 
+    def query_colabfold(self, sequences: list[str], output_dir: Union[Path, str]) -> List[Path]:
+        if not sequences:
+            raise ValueError("At least one protein sequence is required.")
+        return query_colabfold(sequences, output_dir)
+
+
     def _create_input_file(self, sequence: str, outpath: Union[Path, str], **kwargs):
         """
-        Generate fasta .yaml file to be used by self._predict. Returns path to file.
+        Generate the Boltz YAML input file for a single prediction job.
         """
         outpath = Path(outpath)
+        ligand = kwargs.get("ligand", self.ligand)
+        msa_mode = kwargs.get("msa_mode", self.msa_mode)
+        msa_path = kwargs.get("msa_path")
+
+        if msa_path is None:
+            if msa_mode == "server":
+                msa_path = self.query_colabfold([sequence], outpath.parent)[0]
+            elif msa_mode == "empty":
+                msa_path = "empty"
+            else:
+                raise ValueError(f"{msa_mode} is not a valid MSA mode.")
 
         yaml_path = outpath.with_suffix(".yaml")
-        msa_mode = kwargs.get("msa_mode", self.msa_mode)
-        ligand = kwargs.get("ligand", self.ligand)
-        yaml = f"sequences:\n  - protein:\n    id: A\n    sequence: {sequence}\n"
-
-        if msa_mode == "server":
-            a3m_path = query_colabfold([sequence], outpath.parent)[0]
-            yaml += f"    msa: {a3m_path}\n"
-        elif msa_mode == "empty":
-            yaml += "    msa: empty\n"
-        else:
-            raise ValueError(f"{msa_mode} is not a valid MSA mode.")
+        yaml_lines = [
+            "sequences:",
+            "  - protein:",
+            "    id: A",
+            f"    sequence: {sequence}",
+            f"    msa: {msa_path}",
+        ]
 
         if ligand is not None:
-            yaml += f"  - ligand:\n    id: B\n    smiles: {ligand}\n"
-        
+            yaml_lines.extend(
+                [
+                    "  - ligand:",
+                    "    id: Z",
+                    f"    smiles: {ligand}",
+                ]
+            )
+
         with open(yaml_path, "w", encoding="utf-8") as f:
-                f.write(yaml)
-        
+            f.write("\n".join(str(line) for line in yaml_lines) + "\n")
+
         return yaml_path
 
 
     def _predict(self, sequence: str, outpath: Union[Path, str], **kwargs):
         outpath = Path(outpath)
-        
-        output_format = outpath.suffix
+
+        output_format = outpath.suffix.lstrip(".")
         if output_format not in ["pdb", "cif"]:
-            raise ValueError("Unknown format for {outpath}. Use .pdb or .cif.")
+            raise ValueError(f"Unknown format for {outpath}. Use .pdb or .cif.")
         out_fmt = "mmcif" if output_format == "cif" else "pdb"
 
         yaml_path = self._create_input_file(sequence, outpath, **kwargs)
@@ -90,7 +109,6 @@ class BoltzPredictor(StructurePredictor):
         tmp_struct_path = boltz_outdir / f"{yaml_path.stem}_model_0.{output_format}"
         tmp_confidence_path = boltz_outdir / f"confidence_{yaml_path.stem}_model_0.json"
 
-        # Move (copy) files to user-requested location
         shutil.copy(tmp_struct_path, outpath)
         confidence_path = outpath.with_suffix("_confidence.json")
         shutil.copy(tmp_confidence_path, confidence_path)
@@ -103,3 +121,25 @@ class BoltzPredictor(StructurePredictor):
 
         return prediction
 
+
+    def predict_batch(self, sequences: list[str], outpaths: list[Union[Path, str]], **kwargs):
+        if not sequences:
+            raise ValueError("At least one protein sequence is required.")
+
+        outpaths = [Path(path) for path in outpaths]
+        if len(outpaths) != len(sequences):
+            raise ValueError("Number of output paths must match the number of sequences.")
+
+        msa_mode = kwargs.get("msa_mode", self.msa_mode)
+        if msa_mode == "server":
+            msa_paths = self.query_colabfold(sequences, outpaths[0].parent) # type: ignore
+        elif msa_mode == "empty":
+            msa_paths = ["empty"] * len(sequences)
+        else:
+            raise ValueError(f"{msa_mode} is not a valid MSA mode.")
+
+        predictions = []
+        for sequence, outpath, msa_path in zip(sequences, outpaths, msa_paths):
+            predictions.append(self._predict(sequence, outpath, msa_path=msa_path, **kwargs))
+
+        return predictions
