@@ -104,7 +104,7 @@ class BioEmuPredictor(StructurePredictor):
         outpath = Path(outpath)
         outpath.parent.mkdir(parents=True, exist_ok=True)
 
-        msa_path = kwargs.get("msa_path")
+        msa_path = kwargs.pop("msa_path", None)
         if msa_path is None:
             msa_path = self.query_colabfold([sequence], outpath.parent)[0]
 
