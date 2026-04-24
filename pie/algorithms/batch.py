@@ -5,9 +5,15 @@ from typing import Dict, List, Tuple, Union
 
 import numpy as np
 from Levenshtein import distance as edit_distance
+import tqdm
+import subprocess
+from openmm.app import ForceField, PDBFile, Simulation, NoCutoff
+from openmm import LangevinIntegrator
+from openmm.unit import kelvin, picosecond # type: ignore
 
 from .base import InterpolationAlgorithm
 from ..alignment_utils import compute_alignment_indices
+from ..constants import ONE_TO_THREE
 from ..io_utils import read_alignment_indices
 from ..sequence.base import SequencePredictor
 from ..session.session import SessionTracker
@@ -30,6 +36,8 @@ class BatchInterpolation(InterpolationAlgorithm):
         chain_id_2: str,
         outpath: Path,
         min_edit: int = 1,
+        cg2all: bool = False,
+        minimize: bool = False,
         **kwargs,
     ):
         self.ref_sequence = ref_sequence
@@ -38,6 +46,14 @@ class BatchInterpolation(InterpolationAlgorithm):
         self.sequence_model = sequence_model
         self.outpath = Path(outpath)
         self.min_edit = min_edit
+        self.cg2all = cg2all
+        self.minimize = minimize
+
+        if self.cg2all:
+            self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
+            self.cg2all_device = kwargs.get("cg2all_device", "cpu")
+            if self.minimize:
+                self.forcefield = ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
 
         self.template_1 = self._process_template(Path(template_1), chain_id_1, "template_1")
         self.template_2 = self._process_template(Path(template_2), chain_id_2, "template_2")
@@ -231,6 +247,8 @@ class BatchInterpolation(InterpolationAlgorithm):
         return anchors
 
     def run(self):
+        generated_structs: List[TemplateRecord] = []
+
         for round_idx in range(1, self.number_steps + 1):
             anchor_pairs = self.find_anchors(round_idx)
             generated_round: List[TemplateRecord] = []
@@ -301,6 +319,16 @@ class BatchInterpolation(InterpolationAlgorithm):
             self.rounds.append(generated_round)
             self.logger.save_json(self.outpath / "log.json")
 
+        if self.cg2all:
+            cg2all_outpath = self.outpath / "cg2all"
+            for struct in generated_structs:
+                self.extract_backbone_coords_to_pdb(struct, cg2all_outpath)
+            self.run_cg2all(cg2all_outpath)
+
+            if self.minimize:
+                min_outpath = self.outpath / "minimized"
+                self.run_minimization(cg2all_outpath, min_outpath)
+
     def _select_max_edit_record(self, records: List[TemplateRecord]) -> TemplateRecord:
         if not records:
             raise ValueError("Cannot select an anchor from an empty round.")
@@ -323,3 +351,101 @@ class BatchInterpolation(InterpolationAlgorithm):
             else:
                 serialized[key] = value
         return serialized
+
+    def extract_backbone_coords_to_pdb(self, structure: dict, outpath: Path):
+        keep = {"N", "CA", "C", "O"}
+        in_path = Path(structure["struct_path"])
+        round_idx = structure.get("round", "unknown")
+        direction = structure.get("direction", "X")
+        sequence_idx = structure.get("sequence_index", "unknown")
+        outfile = outpath / f"round_{round_idx}_direction_{direction}_sequence_{sequence_idx}_{in_path.stem}_backbone.pdb"
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+
+        residue_index = -1
+        atom_count = 0
+
+        with open(in_path, "r") as fin, open(outfile, "w") as fout:
+            for line in fin:
+                if line.startswith(("ATOM", "HETATM")) and line[12:16].strip() in keep:
+                    atom_name = line[12:16].strip()
+
+                    if atom_name == "N":
+                        residue_index += 1
+                        if residue_index >= len(self.ref_sequence):
+                            raise ValueError(
+                                f"Too many residues in PDB file for given reference sequence of length {len(self.ref_sequence)}."
+                            )
+
+                    if residue_index < len(self.ref_sequence):
+                        new_resname = ONE_TO_THREE[self.ref_sequence[residue_index]]
+                        line = line[:17] + f"{new_resname:>3}" + line[20:]
+
+                    fout.write(line)
+                    atom_count += 1
+
+        expected_atoms = len(self.ref_sequence) * 4
+        assert atom_count == expected_atoms, (
+            f"Expected {expected_atoms} backbone atoms ({len(self.ref_sequence)} residues), but wrote {atom_count} atoms."
+        )
+        assert outfile.exists(), f"Backbone PDB not created: {outfile}" # type: ignore
+        return outfile
+
+    def run_cg2all(self, folder: Path):
+        folder = Path(folder).resolve()
+        backbone_files = list(folder.glob("*_backbone.pdb"))
+
+        for in_pdb in tqdm.tqdm(backbone_files, desc="Running CG2ALL"): # type: ignore
+            out_pdb = in_pdb.with_name(in_pdb.name.replace("_backbone.pdb", "_allatom.pdb"))
+
+            self.cg2all_command = f'''
+            eval "$(conda shell.bash hook)"
+            conda activate {self.cg2all_environment}
+            convert_cg2all -p "{in_pdb}" -o "{out_pdb}" --cg "MainchainModel" --fix --device "{self.cg2all_device}"
+            '''
+
+            result = subprocess.run(
+                self.cg2all_command,
+                shell=True,
+                executable="/bin/bash",
+                check=False,
+                capture_output=True,
+                text=True
+            )
+
+            if result.returncode != 0:
+                print(f"cg2all failed:\n{result.stderr}. Continuing with other files...")
+            else:
+                in_pdb.unlink()
+
+    def minimize_pdb(self, pdb_file: Path, output_file: Path):
+        pdb = PDBFile(str(pdb_file))
+        system = self.forcefield.createSystem(
+            pdb.topology,
+            nonbondedMethod=NoCutoff,
+            constraints=None
+        )
+
+        integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picosecond) # type: ignore
+        simulation = Simulation(pdb.topology, system, integrator)
+        simulation.context.setPositions(pdb.positions)
+        simulation.minimizeEnergy()
+
+        positions = simulation.context.getState(getPositions=True).getPositions()
+        with output_file.open("w") as f:
+            PDBFile.writeFile(simulation.topology, positions, f)
+
+    def run_minimization(self, input_dir: Path, output_dir: Path):
+        input_dir = Path(input_dir)
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        pdb_files = list(input_dir.glob("*_allatom.pdb"))
+
+        for pdb_file in tqdm.tqdm(pdb_files, desc="Minimizing structures"): # type: ignore
+            out_file = output_dir / f"{pdb_file.stem}_min.pdb"
+            try:
+                self.minimize_pdb(pdb_file, out_file)
+            except Exception as e:
+                print(f"PDB {pdb_file.name} could not be minimized: {e}")
+
+        print("All minimizations done.")

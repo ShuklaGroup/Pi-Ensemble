@@ -225,7 +225,10 @@ class SerialInterpolation(InterpolationAlgorithm):
         """
         keep = {"N", "CA", "C", "O"}
         in_path = Path(structure["struct_path"])
-        outfile = outpath / (in_path.stem + "_backbone.pdb")
+        round_label = in_path.parent.name
+        direction_label = in_path.parent.parent.name
+        weight_label = in_path.parent.parent.parent.name
+        outfile = outpath / f"{weight_label}_{direction_label}_{round_label}_{in_path.stem}_backbone.pdb"
         outfile.parent.mkdir(parents=True, exist_ok=True)
 
         residue_index = -1  # Starts before first residue
@@ -269,7 +272,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         backbone_files = list(folder.glob("*_backbone.pdb"))
 
 
-        for in_pdb in tqdm(backbone_files, desc="Running CG2ALL"): # type: ignore
+        for in_pdb in tqdm.tqdm(backbone_files, desc="Running CG2ALL"): # type: ignore
             out_pdb = in_pdb.with_name(in_pdb.name.replace("_backbone.pdb", "_allatom.pdb"))
 
             self.cg2all_command = f'''
@@ -326,7 +329,7 @@ class SerialInterpolation(InterpolationAlgorithm):
 
         pdb_files = list(input_dir.glob("*_allatom.pdb"))
 
-        for pdb_file in tqdm(pdb_files, desc="Minimizing structures"): # type: ignore
+        for pdb_file in tqdm.tqdm(pdb_files, desc="Minimizing structures"):
             out_file = output_dir / f"{pdb_file.stem}_min.pdb"
             try:
                 self.minimize_pdb(pdb_file, out_file)

@@ -40,6 +40,14 @@ class BoltzPredictor(StructurePredictor):
             raise ValueError("At least one protein sequence is required.")
         return query_colabfold(sequences, output_dir)
 
+    def _get_accelerator(self, device: str) -> str:
+        device = device.lower()
+        if device == "cuda":
+            return "gpu"
+        if device in {"gpu", "cpu", "tpu"}:
+            return device
+        raise ValueError(f"Unsupported Boltz accelerator/device: {device}")
+
 
     def _create_input_file(self, sequence: str, outpath: Union[Path, str], **kwargs):
         """
@@ -62,17 +70,17 @@ class BoltzPredictor(StructurePredictor):
         yaml_lines = [
             "sequences:",
             "  - protein:",
-            "    id: A",
-            f"    sequence: {sequence}",
-            f"    msa: {msa_path}",
+            "      id: A",
+            f"      sequence: {sequence}",
+            f"      msa: {msa_path}",
         ]
 
         if ligand is not None:
             yaml_lines.extend(
                 [
                     "  - ligand:",
-                    "    id: Z",
-                    f"    smiles: {ligand}",
+                    "      id: Z",
+                    f"      smiles: {ligand}",
                 ]
             )
 
@@ -89,18 +97,19 @@ class BoltzPredictor(StructurePredictor):
         if output_format not in ["pdb", "cif"]:
             raise ValueError(f"Unknown format for {outpath}. Use .pdb or .cif.")
         out_fmt = "mmcif" if output_format == "cif" else "pdb"
+        accelerator = self._get_accelerator(str(kwargs.get("device", self.device)))
 
         yaml_path = self._create_input_file(sequence, outpath, **kwargs)
 
         command = [
             'boltz', 'predict', yaml_path,
             '--out_dir', outpath.parent,
-            '--accelerator', kwargs.get("device", self.device),
-            '--recycling_steps', kwargs.get("recycling_steps", self.recycling_steps),
+            '--accelerator', accelerator,
+            '--recycling_steps', str(kwargs.get("recycling_steps", self.recycling_steps)),
             '--output_format', out_fmt,
             "--override",
-            "--diffusion_samples", kwargs.get("diffusion_samples", self.diffusion_samples),
-            "--preprocessing-threads", kwargs.get("preprocessing_threads", self.preprocessing_threads),
+            "--diffusion_samples", str(kwargs.get("diffusion_samples", self.diffusion_samples)),
+            "--preprocessing-threads", str(kwargs.get("preprocessing_threads", self.preprocessing_threads)),
         ]
 
         subprocess.run(command, check=True)
