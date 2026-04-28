@@ -1,0 +1,14 @@
+interpolation:
+  name: "batch"
+  kwargs:
+    ref_sequence: "GGGG"
+    number_steps: 3
+    template_1: "template1.pdb"
+    chain_id_1: "A"
+    template_2: "template2.pdb"
+    chain_id_2: "B"
+    outpath: "output_batch"
+    cg2all: true
+    cg2all_environment: "cg2all"
+    cg2all_device: "cuda"
+    minimize: true

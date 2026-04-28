@@ -1,0 +1,6 @@
+structure_prediction:
+  model: "esm3"
+  kwargs:
+    device: "cuda"
+    temperature: 0.7
+    num_steps: 8

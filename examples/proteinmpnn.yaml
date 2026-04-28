@@ -1,0 +1,7 @@
+sequence_prediction:
+  model: "proteinmpnn"
+  kwargs:
+    pmpnn_path: "/opt/ProteinMPNN/"
+    temperature: 0.1
+    seed: 1
+    batch_size: 1

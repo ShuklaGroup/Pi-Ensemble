@@ -1,0 +1,8 @@
+structure_prediction:
+  model: "boltz"
+  kwargs:
+    device: "cuda"
+    recycling_steps: 1
+    diffusion_samples: 1
+    preprocessing_threads: 1
+    msa_mode: "server"

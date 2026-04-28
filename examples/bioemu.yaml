@@ -1,0 +1,9 @@
+structure_prediction:
+  model: "bioemu"
+  kwargs:
+    num_samples: 20
+    sample_index: 0
+    batch_size_100: 10
+    model_name: "bioemu-v1.1"
+    denoiser_type: "dpm"
+    filter_samples: true
