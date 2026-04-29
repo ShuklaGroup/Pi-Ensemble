@@ -174,6 +174,7 @@ If you use $\pi$-Ensemble, please cite its associated publication as well as the
 | `boltz` | [Boltz](https://www.biorxiv.org/content/10.1101/2024.11.19.624167v4) |
 | `bioemu` | [BioEmu](https://www.science.org/doi/10.1126/science.adv9817) |
 | `proteinmpnn` | [ProteinMPNN](https://www.science.org/doi/10.1126/science.add2187) |
+| `cg2all` | [cg2all](https://www.sciencedirect.com/science/article/pii/S0969212623004458) |
 
 ## License <a name="license"></a>
 
@@ -185,3 +186,4 @@ $\pi$-Ensemble itself is distributed under the [MIT License](LICENSE). Model out
 | Boltz | [MIT License](https://github.com/jwohlwend/boltz/blob/main/LICENSE) |
 | BioEmu | [MIT License](https://github.com/microsoft/bioemu/blob/main/LICENSE) |
 | ProteinMPNN | [MIT License](https://github.com/dauparas/ProteinMPNN/blob/main/LICENSE)  |
+| cg2all | [Apache License 2.0](https://github.com/huhlim/cg2all/blob/main/LICENSE)  |
