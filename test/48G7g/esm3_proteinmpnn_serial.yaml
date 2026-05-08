@@ -1,0 +1,32 @@
+structure_prediction:
+  model: "esm3"
+  kwargs:
+    device: "cuda"
+    temperature: 0.7
+    num_steps: 8
+
+sequence_prediction:
+  model: "proteinmpnn"
+  kwargs:
+    pmpnn_path: "/opt/ProteinMPNN/"
+    temperature: 0.1
+    seed: 1
+    batch_size: 1
+
+interpolation:
+  name: "serial"
+  kwargs:
+    ref_sequence: "QVQLQQSGAELVKPGASVKLSCTASGFNIKDTYMHWVKQRPEQGLEWIGRIDPANGNTKYDPKFQGKATITADTSSNTAYLQLSSLTSEDTAVYYCASYYGIYWGQGTTLTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSC"
+    number_steps: 3
+    weight_start: 0.0
+    weight_end: 0.5
+    weight_step: 0.01
+    template_1: "test/48G7g/1AJ7_chain_B_fixed.pdb"
+    chain_id_1: "B"
+    template_2: "test/48G7g/2RCS_chain_B_fixed.pdb"
+    chain_id_2: "B"
+    outpath: "test/48G7g/output_esm3_proteinmpnn_serial"
+    cg2all: true
+    cg2all_environment: "cg2all"
+    cg2all_device: "cuda"
+    minimize: true

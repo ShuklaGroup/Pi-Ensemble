@@ -1,0 +1,32 @@
+structure_prediction:
+  model: "bioemu"
+  kwargs:
+    num_samples: 20
+    sample_index: 0
+    batch_size_100: 10
+    model_name: "bioemu-v1.1"
+    denoiser_type: "dpm"
+    filter_samples: true
+
+sequence_prediction:
+  model: "proteinmpnn"
+  kwargs:
+    pmpnn_path: "/opt/ProteinMPNN/"
+    temperature: 0.1
+    seed: 1
+    batch_size: 1
+
+interpolation:
+  name: "batch"
+  kwargs:
+    ref_sequence: "QVQLQQSGAELVKPGASVKLSCTASGFNIKDTYMHWVKQRPEQGLEWIGRIDPANGNTKYDPKFQGKATITADTSSNTAYLQLSSLTSEDTAVYYCASYYGIYWGQGTTLTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSC"
+    number_steps: 3
+    template_1: "test/48G7g/1AJ7_chain_B_fixed.pdb"
+    chain_id_1: "B"
+    template_2: "test/48G7g/2RCS_chain_B_fixed.pdb"
+    chain_id_2: "B"
+    outpath: "test/48G7g/output_bioemu_proteinmpnn_batch"
+    cg2all: true
+    cg2all_environment: "cg2all"
+    cg2all_device: "cuda"
+    minimize: true
