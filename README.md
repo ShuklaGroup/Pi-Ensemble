@@ -1,9 +1,9 @@
-# PI-Ensemble
+# Pi-Ensemble
 [PREPRINT PLACEHOLDER]
 [DataBank PLACEHOLDER]
 
 
-$\pi$-Ensemble is a modular framework for generating protein sequence/structure interpolations between two template structures. The package combines:
+Pi-Ensemble is a modular framework for generating protein sequence/structure interpolations between two template structures. The package combines:
 
 - a **structure predictor** that maps sequence -> structure
 - an **inverse folding model** that maps structure -> sequence probabilities
@@ -30,7 +30,7 @@ The code is organized under [`pie/`](/media/diego/datapartition/21-InterpolatedE
 
 ## Implemented Models <a name="available"></a>
 
-$\pi$-Ensemble runs pre-trained models for structure prediction and sequence design. The implemented models and sample configuration files are listed in the tables below.
+Pi-Ensemble runs pre-trained models for structure prediction and sequence design. The implemented models and sample configuration files are listed in the tables below.
 
 ### Structure Prediction <a name="available-structure"></a>
 
@@ -63,7 +63,7 @@ Installation and usage configuration vary according to the models you wish to us
 
 ### Prediction <a name="prediction"></a>
 
-$\pi$-Ensemble is executed from a YAML configuration file through [`pie/run_pie.py`](pie/run_pie.py). A run consists of three blocks:
+Pi-Ensemble is executed from a YAML configuration file through [`pie/run_pie.py`](pie/run_pie.py). A run consists of three blocks:
 
 - `structure_prediction`: selects the sequence -> structure model
 - `sequence_prediction`: selects the structure -> sequence model
@@ -178,7 +178,7 @@ If you use $\pi$-Ensemble, please cite its associated publication as well as the
 
 ## License <a name="license"></a>
 
-$\pi$-Ensemble itself is distributed under the [MIT License](LICENSE). Model outputs and pretrained weights may be subject to additional third-party licenses or usage restrictions, depending on which options you choose. Users are responsible for obtaining any required model weights and complying with the corresponding terms of use.
+Pi-Ensemble itself is distributed under the [MIT License](LICENSE). Model outputs and pretrained weights may be subject to additional third-party licenses or usage restrictions, depending on which options you choose. Users are responsible for obtaining any required model weights and complying with the corresponding terms of use.
 
 | Component | License / source note |
 | --- | --- |
