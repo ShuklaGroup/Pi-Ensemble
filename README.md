@@ -61,6 +61,9 @@ Installation and usage configuration vary according to the models you wish to us
 
 [INSTALLATION INSTRUCTIONS HERE]
 
+#### Docker Image
+[https://hub.docker.com/repository/docker/zcorn/pie/general](https://hub.docker.com/repository/docker/zcorn/pie/general)
+
 ### Prediction <a name="prediction"></a>
 
 Pi-Ensemble is executed from a YAML configuration file through [`pie/run_pie.py`](pie/run_pie.py). A run consists of three blocks:
