@@ -62,7 +62,10 @@ Installation and usage configuration vary according to the models you wish to us
 [INSTALLATION INSTRUCTIONS HERE]
 
 #### Docker Image
-[https://hub.docker.com/repository/docker/zcorn/pie/general](https://hub.docker.com/repository/docker/zcorn/pie/general)
+Meanwhile, for an out-of-box and reproducible deployment, we provide a Docker container: [https://hub.docker.com/repository/docker/zcorn/pie/general](https://hub.docker.com/repository/docker/zcorn/pie/general), which is the same as the PI-Ensemble stock version. The sample `Dockerfile` and `docker-compose.yml` are also provided  in this code repo.
+
+
+
 
 ### Prediction <a name="prediction"></a>
 
