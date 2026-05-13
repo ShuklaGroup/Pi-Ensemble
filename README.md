@@ -55,16 +55,38 @@ Pi-Ensemble runs pre-trained models for structure prediction and sequence design
 
 ## Usage <a name="usage"></a>
 
-Installation and usage configuration vary according to the models you wish to use.
+Please note that installation and usage configuration may vary according to the models you wish to use.
 
 ### Installation <a name="install"></a>
 
-[INSTALLATION INSTRUCTIONS HERE]
+We recommend using [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install/overview) to handle Python environments.
+
+Since our package wraps different models, multiple environments may be needed to manage conflicting dependencies. 
+
+The following is an example using Python 3.11, CUDA 12.9, and PyTorch 2.8. This environment should work with Boltz-1/2, ESM3, BioEmu, and ProteinMPNN.
+
+```bash
+conda create -n pie python=3.11
+conda activate pie
+conda install -c nvidia cuda-nvcc=12.9.86 cuda-toolkit=12.9.1
+pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129
+pip install biotite biopython pandas Levenshtein tqdm openmm[cuda12]
+pip install boltz[cuda] -U
+pip install esm
+pip install bioemu[cuda]
+git clone https://github.com/dauparas/ProteinMPNN /opt/ProteinMPNN # recommended path, git required, may need sudo
+pip install git+https://github.com/ShuklaGroup/PIE.git # exposes run_pie
+```
+
+On top of this, you need to install [cg2all](https://github.com/huhlim/cg2all) in a separate environment. Based on our experience, the CPU-only version is fast enough.
+
+```bash
+conda create -n cg2all python=3.11
+pip install git+http://github.com/huhlim/cg2all
+```
 
 #### Docker Image
-Meanwhile, for an out-of-box and reproducible deployment, we provide a Docker container: [https://hub.docker.com/repository/docker/zcorn/pie/general](https://hub.docker.com/repository/docker/zcorn/pie/general), which is the same as the PI-Ensemble stock version. The sample `Dockerfile` and `docker-compose.yml` are also provided  in this code repo.
-
-
+For an out-of-box and reproducible deployment, we provide a Docker container: [https://hub.docker.com/repository/docker/zcorn/pie/general](https://hub.docker.com/repository/docker/zcorn/pie/general), which is the same as the Pi-Ensemble stock version. The sample [`Dockerfile`](Dockerfile) and [`docker-compose.yml`](docker-compose.yml) are also provided  in this code repo.
 
 
 ### Prediction <a name="prediction"></a>
@@ -172,7 +194,7 @@ Visualization scripts will be shared soon.
 
 If you use $\pi$-Ensemble, please cite its associated publication as well as the models called by your config choices.
 
-[PLACEHOLDER FOR PI-ENSEMBLE CITATION]
+[PLACEHOLDER FOR Pi-Ensemble CITATION]
 
 | If your run used... | Also cite... |
 | --- | --- |
