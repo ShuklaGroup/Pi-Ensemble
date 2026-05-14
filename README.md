@@ -63,7 +63,7 @@ We recommend using [Conda](https://www.anaconda.com/docs/getting-started/minicon
 
 Since our package wraps different models, multiple environments may be needed to manage conflicting dependencies. 
 
-The following is an example using Python 3.11, CUDA 12.9, and PyTorch 2.8. This environment should work with Boltz-1/2, ESM3, BioEmu, and ProteinMPNN.
+The following is an example using Python 3.11, CUDA 12.9, and PyTorch 2.8. This environment should work with {Boltz-1/2, ESM3, BioEmu} (select one) and ProteinMPNN.
 
 ```bash
 conda create -n pie python=3.11
@@ -71,9 +71,7 @@ conda activate pie
 conda install -c nvidia cuda-nvcc=12.9.86 cuda-toolkit=12.9.1
 pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129
 pip install biotite biopython pandas Levenshtein tqdm openmm[cuda12]
-pip install boltz[cuda] -U
-pip install esm
-pip install bioemu[cuda]
+pip install {boltz[cuda] -U, esm, bioemu[cuda]}  # select one! Dependencies may conflict if you try to install all
 git clone https://github.com/dauparas/ProteinMPNN /opt/ProteinMPNN # recommended path, git required, may need sudo
 pip install git+https://github.com/ShuklaGroup/PIE.git # exposes run_pie
 ```
