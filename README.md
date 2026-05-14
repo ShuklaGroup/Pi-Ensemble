@@ -73,7 +73,7 @@ pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https
 pip install biotite biopython pandas Levenshtein tqdm openmm[cuda12]
 pip install {boltz[cuda] -U, esm, bioemu[cuda]}  # select one! Dependencies may conflict if you try to install all
 git clone https://github.com/dauparas/ProteinMPNN /opt/ProteinMPNN # recommended path, git required, may need sudo
-pip install git+https://github.com/ShuklaGroup/PIE.git # exposes run_pie
+pip install git+https://github.com/ShuklaGroup/Pi-Ensemble.git # exposes run_pie
 ```
 
 On top of this, you need to install [cg2all](https://github.com/huhlim/cg2all) in a separate environment. Based on our experience, the CPU-only version is fast enough.
