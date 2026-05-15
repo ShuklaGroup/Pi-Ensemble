@@ -15,3 +15,4 @@ interpolation:
     cg2all_environment: "cg2all"
     cg2all_device: "cuda"
     minimize: true
+    minimize_forcefield: "charmm36_2024.xml"

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import numpy as np
-from typing import Dict, List, Union
+from typing import Dict, List, Sequence, Union
 from pathlib import Path
 import tqdm
 import subprocess
 from openmm.app import ForceField, PDBFile, Simulation, NoCutoff
 from openmm import LangevinIntegrator
 from openmm.unit import kelvin, picosecond # type: ignore
-from .base import InterpolationAlgorithm
+from .base import DEFAULT_MINIMIZE_FORCEFIELD, InterpolationAlgorithm, normalize_forcefield_files
 from ..session.session import SessionTracker
 from ..constants import ONE_TO_THREE
 from ..structure.base import StructurePredictor
@@ -36,6 +36,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         outpath: Path,
         cg2all: bool = False,
         minimize: bool = False,
+        minimize_forcefield: Union[str, Sequence[str]] = DEFAULT_MINIMIZE_FORCEFIELD,
         **kwargs
     ):
 
@@ -52,12 +53,13 @@ class SerialInterpolation(InterpolationAlgorithm):
         
         self.cg2all = cg2all
         self.minimize = minimize
+        self.minimize_forcefield = normalize_forcefield_files(minimize_forcefield)
 
         if self.cg2all:
             self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
             self.cg2all_device = kwargs.get("cg2all_device", "cpu")
             if self.minimize:
-                self.forcefield = ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
+                self.forcefield = ForceField(*self.minimize_forcefield)
 
         
         self.template_1 = self._process_template(template_1, chain_id_1)

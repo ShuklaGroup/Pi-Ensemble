@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, Union
 
 import numpy as np
 from Levenshtein import distance as edit_distance
@@ -11,7 +11,7 @@ from openmm.app import ForceField, PDBFile, Simulation, NoCutoff
 from openmm import LangevinIntegrator
 from openmm.unit import kelvin, picosecond # type: ignore
 
-from .base import InterpolationAlgorithm
+from .base import DEFAULT_MINIMIZE_FORCEFIELD, InterpolationAlgorithm, normalize_forcefield_files
 from ..alignment_utils import compute_alignment_indices
 from ..constants import ONE_TO_THREE
 from ..io_utils import read_alignment_indices
@@ -38,6 +38,7 @@ class BatchInterpolation(InterpolationAlgorithm):
         min_edit: int = 1,
         cg2all: bool = False,
         minimize: bool = False,
+        minimize_forcefield: Union[str, Sequence[str]] = DEFAULT_MINIMIZE_FORCEFIELD,
         **kwargs,
     ):
         self.ref_sequence = ref_sequence
@@ -48,12 +49,13 @@ class BatchInterpolation(InterpolationAlgorithm):
         self.min_edit = min_edit
         self.cg2all = cg2all
         self.minimize = minimize
+        self.minimize_forcefield = normalize_forcefield_files(minimize_forcefield)
 
         if self.cg2all:
             self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
             self.cg2all_device = kwargs.get("cg2all_device", "cpu")
             if self.minimize:
-                self.forcefield = ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
+                self.forcefield = ForceField(*self.minimize_forcefield)
 
         self.template_1 = self._process_template(Path(template_1), chain_id_1, "template_1")
         self.template_2 = self._process_template(Path(template_2), chain_id_2, "template_2")

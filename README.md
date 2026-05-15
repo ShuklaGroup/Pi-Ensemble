@@ -184,6 +184,24 @@ If enabled by the interpolation config, postprocessing outputs are also written 
 - `cg2all/` for backbone-to-all-atom conversion
 - `minimized/` for OpenMM-minimized structures
 
+OpenMM minimization uses `minimize_forcefield`, which defaults to `charmm36_2024.xml`. You can override it with any [OpenMM-compatible forcefield](https://ommprotocol.readthedocs.io/en/latest/forcefields.html) XML name, or with a list when multiple XML files are needed:
+
+```yaml
+interpolation:
+  kwargs:
+    minimize: true
+    minimize_forcefield: "amber14-all.xml"
+```
+
+```yaml
+interpolation:
+  kwargs:
+    minimize: true
+    minimize_forcefield:
+      - "amber14/protein.ff14SB.xml"
+      - "amber14/tip3pfb.xml"
+```
+
 ### Visualization <a name="visualization"></a>
 
 Visualization scripts will be shared soon.
