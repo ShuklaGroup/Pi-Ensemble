@@ -104,7 +104,7 @@ run_pie path/to/config.yaml
 Example:
 
 ```bash
-run_pie examples/esm3_proteinmpnn_serial.yaml
+run_pie test/48G7g/esm3_proteinmpnn_serial.yaml
 ```
 
 The config schema is:
