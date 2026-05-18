@@ -208,7 +208,7 @@ Visualization scripts will be shared soon.
 
 ## Citations <a name="citations"></a>
 
-If you use $\pi$-Ensemble, please cite its associated publication as well as the models called by your config choices.
+If you use Pi-Ensemble, please cite its associated publication as well as the models called by your config choices.
 
 [PLACEHOLDER FOR Pi-Ensemble CITATION]
 
