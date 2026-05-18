@@ -222,4 +222,4 @@ __marimo__/
 
 # Sample data files
 samples/
-test/48G7g/*/output_*/
+test/*/*/output_*/
