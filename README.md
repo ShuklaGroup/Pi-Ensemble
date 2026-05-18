@@ -59,32 +59,77 @@ Please note that installation and usage configuration may vary according to the 
 
 ### Installation <a name="install"></a>
 
-We recommend using [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install/overview) to handle Python environments.
+#### Docker
 
-Since our package wraps different models, multiple environments may be needed to manage conflicting dependencies. 
+Docker is the recommended path when you want the tested dependency layout without reproducing the host setup manually. The repository ships a CUDA 12.8 image definition and Compose file:
 
-The following is an example using Python 3.11, CUDA 12.9, and PyTorch 2.8. This environment should work with {Boltz-1/2, ESM3, BioEmu} (select one) and ProteinMPNN.
+- [`Dockerfile`](Dockerfile)
+- [`docker-compose.yml`](docker-compose.yml)
+
+The published image is `zcorn/pi-ensemble:cuda12.8`. Pull it with:
 
 ```bash
-conda create -n pie python=3.11
+docker pull zcorn/pi-ensemble:cuda12.8
+```
+
+Or build it locally with:
+
+```bash
+docker compose build PI-Ensemble
+```
+
+Run Pi-Ensemble inside the container with:
+
+```bash
+docker compose run --rm PI-Ensemble run_pie test/48G7g/boltz_proteinmpnn_serial.yaml
+```
+
+The Compose setup mounts the repository at `/workspace`, keeps Hugging Face downloads in the host cache, persists model caches in a named Docker volume, and reserves all available NVIDIA GPUs. BioEmu is installed in a separate `bioemu` Conda environment inside the image to avoid dependency conflicts with Boltz.
+
+If you use ESM3, authenticate with Hugging Face before the first run because the model repository is gated:
+
+```bash
+huggingface-cli login
+```
+
+#### Host Installation
+
+For host installation, use [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install/overview). Pi-Ensemble uses separate environments because Boltz and BioEmu require incompatible dependency sets.
+
+Create the main Pi-Ensemble environment:
+
+```bash
+conda env create -f environment.yml
 conda activate pie
-conda install -c nvidia cuda-nvcc=12.9.86 cuda-toolkit=12.9.1
-pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu129
-pip install biotite biopython pandas Levenshtein tqdm openmm[cuda12]
-pip install {boltz[cuda] -U, esm, bioemu[cuda]}  # select one! Dependencies may conflict if you try to install all
-git clone https://github.com/dauparas/ProteinMPNN /opt/ProteinMPNN # recommended path, git required, may need sudo
-pip install git+https://github.com/ShuklaGroup/Pi-Ensemble.git # exposes run_pie
 ```
 
-On top of this, you need to install [cg2all](https://github.com/huhlim/cg2all) in a separate environment. Based on our experience, the CPU-only version is fast enough.
+Clone ProteinMPNN at a known location:
 
 ```bash
-conda create -n cg2all python=3.11
-pip install git+http://github.com/huhlim/cg2all
+git clone https://github.com/dauparas/ProteinMPNN.git /opt/ProteinMPNN
 ```
 
-#### Docker Image
-For an out-of-box and reproducible deployment, we provide a Docker container: [https://hub.docker.com/repository/docker/zcorn/pie/general](https://hub.docker.com/repository/docker/zcorn/pie/general), which is the same as the Pi-Ensemble stock version. The sample [`Dockerfile`](Dockerfile) and [`docker-compose.yml`](docker-compose.yml) are also provided  in this code repo.
+If `/opt` is not writable on your machine, clone elsewhere and set `sequence_prediction.kwargs.pmpnn_path` in your YAML config to that directory.
+
+Create the optional BioEmu environment when you need `structure_prediction.model: "bioemu"`:
+
+```bash
+conda env create -f environment-bioemu.yml
+```
+
+Create the optional cg2all environment when you enable `cg2all: true`:
+
+```bash
+conda env create -f environment-cg2all.yml
+```
+
+The host environment files mirror the container layout:
+
+- [`environment.yml`](environment.yml): main `pie` environment with Boltz, ESM, OpenMM, and the Pi-Ensemble package
+- [`environment-bioemu.yml`](environment-bioemu.yml): separate `bioemu` environment
+- [`environment-cg2all.yml`](environment-cg2all.yml): separate `cg2all` environment
+
+When running BioEmu from a host install, the default configuration assumes the auxiliary environment is named `bioemu`. Override `bioemu_environment` in the model kwargs only if you use another name.
 
 
 ### Prediction <a name="prediction"></a>
