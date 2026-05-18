@@ -1,0 +1,28 @@
+name: pie
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - setuptools
+  - wheel
+  - pip:
+      - --index-url=https://download.pytorch.org/whl/cu128
+      - --extra-index-url=https://pypi.org/simple
+      - torch==2.7.1
+      - torchvision==0.22.1
+      - numpy<2
+      - mdtraj<1.11
+      - .
+      - pyyaml
+      - requests
+      - httpx
+      - pandas
+      - python-Levenshtein
+      - openmm
+      - boltz==2.2.0
+      - esm
+      - cuequivariance==0.6.0
+      - cuequivariance-torch==0.6.0
+      - cuequivariance-ops-cu12==0.6.0
+      - cuequivariance-ops-torch-cu12==0.6.0

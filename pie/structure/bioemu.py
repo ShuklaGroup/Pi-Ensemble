@@ -1,10 +1,10 @@
 from pathlib import Path
+import json
+import subprocess
 from typing import List, Union
 
 from .base import StructurePredictor
 from ..mmseqs_query import query_colabfold
-
-from bioemu.sample import main as sample
 
 
 class BioEmuPredictor(StructurePredictor):
@@ -28,6 +28,7 @@ class BioEmuPredictor(StructurePredictor):
                 filter_samples (bool): Whether to filter unphysical samples (default: True).
                 steering_config (str | Path | None): Optional steering config.
                 base_seed (int | None): Optional sampling seed.
+                bioemu_environment (str): Conda environment containing BioEmu (default: "bioemu").
         """
         self.num_samples = int(kwargs.get("num_samples", 1))
         self.sample_index = int(kwargs.get("sample_index", 0))
@@ -43,9 +44,7 @@ class BioEmuPredictor(StructurePredictor):
         self.filter_samples = bool(kwargs.get("filter_samples", True))
         self.steering_config = kwargs.get("steering_config")
         self.base_seed = kwargs.get("base_seed")
-
-        if sample is None:
-            raise ImportError("bioemu is not available in the current environment.")
+        self.bioemu_environment = kwargs.get("bioemu_environment", "bioemu")
 
     def query_colabfold(self, sequences: list[str], output_dir: Union[Path, str]) -> List[Path]:
         if not sequences:
@@ -68,8 +67,45 @@ class BioEmuPredictor(StructurePredictor):
             "steering_config": kwargs.get("steering_config", self.steering_config),
             "base_seed": kwargs.get("base_seed", self.base_seed),
         }
-        sample_kwargs = {key: value for key, value in sample_kwargs.items() if value is not None}
-        sample(str(msa_path), num_samples, output_dir, **sample_kwargs) # type: ignore[misc]
+        sample_kwargs = {
+            key: str(value) if isinstance(value, Path) else value
+            for key, value in sample_kwargs.items()
+            if value is not None
+        }
+        payload = {
+            "msa_path": str(msa_path),
+            "num_samples": num_samples,
+            "output_dir": str(output_dir),
+            "kwargs": sample_kwargs,
+        }
+        runner = """
+import json
+import sys
+from pathlib import Path
+
+from bioemu.sample import main as sample
+
+payload = json.loads(sys.argv[1])
+sample(
+    payload["msa_path"],
+    payload["num_samples"],
+    Path(payload["output_dir"]),
+    **payload["kwargs"],
+)
+"""
+        subprocess.run(
+            [
+                "conda",
+                "run",
+                "-n",
+                self.bioemu_environment,
+                "python",
+                "-c",
+                runner,
+                json.dumps(payload),
+            ],
+            check=True,
+        )
 
     def _find_sample_files(self, output_dir: Path) -> tuple[Path, Path]:
         topology_files = sorted(output_dir.rglob("topology.pdb"))

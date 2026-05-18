@@ -1,0 +1,11 @@
+name: cg2all
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - setuptools
+  - wheel
+  - pip:
+      - git+https://github.com/huhlim/cg2all.git@a00b8816736c08852944f147e39164d0f5e1834e
+      - e3nn==0.5.1

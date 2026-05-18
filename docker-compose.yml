@@ -1,0 +1,39 @@
+name: PI-Ensemble
+
+services:
+  PI-Ensemble:
+    image: zcorn/pi-ensemble:cuda12.8
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: PI-Ensemble-cuda12-8
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    shm_size: 8gb
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      HF_HOME: /cache/huggingface
+      TORCH_HOME: /cache/torch
+      BOLTZ_CACHE: /cache/boltz
+      DGLBACKEND: pytorch
+    volumes:
+      - ./:/workspace
+ # Uncomment the lines if you want configs/inputs/outputs to come from somewhere else.
+ #     - ./configs:/workspace/configs
+ #     - ./inputs:/workspace/inputs
+ #     - ./outputs:/workspace/outputs
+      - ~/.cache/huggingface:/cache/huggingface
+      - PI-Ensemble-cache:/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+
+volumes:
+  PI-Ensemble-cache:
