@@ -53,7 +53,8 @@ class BatchInterpolation(InterpolationAlgorithm):
 
         if self.cg2all:
             self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
-            self.cg2all_device = kwargs.get("cg2all_device", "cpu")
+            # self.cg2all_device = kwargs.get("cg2all_device", "cpu")
+            self.cg2all_device = "cpu" # We have only implemented CPU support for cg2all for now, since GPU support requires additional setup and testing.
             if self.minimize:
                 self.forcefield = ForceField(*self.minimize_forcefield)
 
