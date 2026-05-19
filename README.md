@@ -264,6 +264,7 @@ If you use Pi-Ensemble, please cite its associated publication as well as the mo
 | `bioemu` | [BioEmu](https://www.science.org/doi/10.1126/science.adv9817) |
 | `proteinmpnn` | [ProteinMPNN](https://www.science.org/doi/10.1126/science.add2187) |
 | `cg2all` | [cg2all](https://www.sciencedirect.com/science/article/pii/S0969212623004458) |
+| `minimize` | [OpenMM](https://pubs.acs.org/doi/10.1021/acs.jpcb.3c06662) |
 
 ## License <a name="license"></a>
 
@@ -276,3 +277,4 @@ Pi-Ensemble itself is distributed under the [MIT License](LICENSE). Model output
 | BioEmu | [MIT License](https://github.com/microsoft/bioemu/blob/main/LICENSE) |
 | ProteinMPNN | [MIT License](https://github.com/dauparas/ProteinMPNN/blob/main/LICENSE)  |
 | cg2all | [Apache License 2.0](https://github.com/huhlim/cg2all/blob/main/LICENSE)  |
+| OpenMM | Various open [licenses](https://github.com/openmm/openmm/blob/master/docs-source/licenses/Licenses.txt) |
