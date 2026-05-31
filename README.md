@@ -123,6 +123,8 @@ Create the optional cg2all environment when you enable `cg2all: true`:
 conda env create -f environment-cg2all.yml
 ```
 
+The provided cg2all environment is CPU-only. Pi-Ensemble always runs cg2all with `--device cpu`.
+
 The host environment files mirror the container layout:
 
 - [`environment.yml`](environment.yml): main `pie` environment with Boltz, ESM, OpenMM, and the Pi-Ensemble package

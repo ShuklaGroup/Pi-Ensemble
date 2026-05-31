@@ -25,5 +25,4 @@ interpolation:
     outpath: "test/48G7g/output_esm3_proteinmpnn_batch"
     cg2all: true
     cg2all_environment: "cg2all"
-    cg2all_device: "cuda"
     minimize: true

@@ -53,8 +53,6 @@ class BatchInterpolation(InterpolationAlgorithm):
 
         if self.cg2all:
             self.cg2all_environment = kwargs.get("cg2all_environment", "cg2all")
-            # self.cg2all_device = kwargs.get("cg2all_device", "cpu")
-            self.cg2all_device = "cpu" # We have only implemented CPU support for cg2all for now, since GPU support requires additional setup and testing.
             if self.minimize:
                 self.forcefield = ForceField(*self.minimize_forcefield)
 
@@ -399,11 +397,11 @@ class BatchInterpolation(InterpolationAlgorithm):
 
         for in_pdb in tqdm.tqdm(backbone_files, desc="Running CG2ALL"): # type: ignore
             out_pdb = in_pdb.with_name(in_pdb.name.replace("_backbone.pdb", "_allatom.pdb"))
-
+            # We have only implemented CPU support for cg2all for now, since GPU support requires additional setup and testing.
             self.cg2all_command = f'''
             eval "$(conda shell.bash hook)"
             conda activate {self.cg2all_environment}
-            convert_cg2all -p "{in_pdb}" -o "{out_pdb}" --cg "MainchainModel" --fix --device "{self.cg2all_device}"
+            convert_cg2all -p "{in_pdb}" -o "{out_pdb}" --cg "MainchainModel" --fix --device "cpu"
             '''
 
             result = subprocess.run(
