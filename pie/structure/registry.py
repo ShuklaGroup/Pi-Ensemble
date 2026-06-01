@@ -1,4 +1,5 @@
 from .esm3 import ESM3Predictor
+from .esmfold2 import ESMFold2Predictor
 from .boltz import BoltzPredictor
 from .bioemu import BioEmuPredictor
 
@@ -23,5 +24,6 @@ class StructurePredictorRegistry:
 
 
 StructurePredictorRegistry.register("esm3", ESM3Predictor)
+StructurePredictorRegistry.register("esmfold2", ESMFold2Predictor)
 StructurePredictorRegistry.register("boltz", BoltzPredictor)
 StructurePredictorRegistry.register("bioemu", BioEmuPredictor)
