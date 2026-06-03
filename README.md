@@ -9,7 +9,7 @@ Pi-Ensemble is a modular framework for generating protein sequence/structure int
 - an **inverse folding model** that maps structure -> sequence probabilities
 - an **interpolation algorithm** that mixes information between two templates
 
-The code is organized under [`pie/`](/media/diego/datapartition/21-InterpolatedEnsemble/PIE_new/pie), with the main entrypoint in [`pie/run_pie.py`](/media/diego/datapartition/21-InterpolatedEnsemble/PIE_new/pie/run_pie.py). Scientific context for the method will be linked here once the associated manuscript and data resources are public.
+The code is organized under [`pie/`](pie/), with the main entrypoint in [`pie/run_pie.py`](pie/run_pie.py). Scientific context for the method will be linked here once the associated manuscript and data resources are public.
 
 [FRONTPAGE IMAGE]
 
