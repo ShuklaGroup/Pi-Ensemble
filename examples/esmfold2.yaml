@@ -1,0 +1,10 @@
+structure_prediction:
+  model: "esmfold2"
+  kwargs:
+    model_name: "biohub/ESMFold2"
+    device: "cuda"
+    num_loops: 3
+    num_sampling_steps: 50
+    num_diffusion_samples: 1
+    seed: 0
+    protein_id: "A"
