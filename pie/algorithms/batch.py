@@ -260,7 +260,6 @@ class BatchInterpolation(InterpolationAlgorithm):
                 interpolated = self.find_interpolated_sequences(lambda_values, anchor, mobile)
 
                 sequences = list(interpolated.items())
-                generated_structs: List[TemplateRecord] = []
                 edit_distances: List[int] = []
 
                 sequence_strings = [sequence for sequence, _ in sequences]
