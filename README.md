@@ -282,3 +282,7 @@ Pi-Ensemble itself is distributed under the [MIT License](LICENSE). Model output
 | ProteinMPNN | [MIT License](https://github.com/dauparas/ProteinMPNN/blob/main/LICENSE)  |
 | cg2all | [Apache License 2.0](https://github.com/huhlim/cg2all/blob/main/LICENSE)  |
 | OpenMM | Various open [licenses](https://github.com/openmm/openmm/blob/master/docs-source/licenses/Licenses.txt) |
+
+## Generative AI Acknowledgement <a name="gen-ai-ackn"></a>
+
+This repository was built with input from [Codex](https://openai.com/codex/).
