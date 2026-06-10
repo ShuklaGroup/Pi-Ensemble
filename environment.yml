@@ -2,7 +2,8 @@ name: pie
 channels:
   - conda-forge
 dependencies:
-  - python=3.11
+  - python=3.12
+  - git
   - pip
   - setuptools
   - wheel
@@ -11,8 +12,8 @@ dependencies:
       - --extra-index-url=https://pypi.org/simple
       - torch==2.7.1
       - torchvision==0.22.1
-      - numpy<2
-      - mdtraj<1.11
+      - numpy
+      - mdtraj
       - .
       - pyyaml
       - requests
@@ -21,7 +22,7 @@ dependencies:
       - python-Levenshtein
       - openmm
       - boltz==2.2.0
-      - esm
+      - esm @ git+https://github.com/Biohub/esm.git@main
       - cuequivariance==0.6.0
       - cuequivariance-torch==0.6.0
       - cuequivariance-ops-cu12==0.6.0

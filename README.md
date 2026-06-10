@@ -85,7 +85,7 @@ Run Pi-Ensemble inside the container with:
 docker compose run --rm PI-Ensemble run_pie test/48G7g/boltz_proteinmpnn_serial.yaml
 ```
 
-The Compose setup mounts the repository at `/workspace`, keeps Hugging Face downloads in the host cache, persists model caches in a named Docker volume, and reserves all available NVIDIA GPUs. BioEmu is installed in a separate `bioemu` Conda environment inside the image to avoid dependency conflicts with Boltz.
+The Compose setup mounts the repository at `/workspace`, keeps Hugging Face downloads in the host cache, persists model caches in a named Docker volume, and reserves all available NVIDIA GPUs. The main `pie` environment uses Python 3.12 for ESMFold2 support. BioEmu is installed in a separate Python 3.11 `bioemu` Conda environment inside the image to avoid dependency conflicts with Boltz, and cg2all is kept in its own Python 3.11 environment.
 
 If you use ESM3, authenticate with Hugging Face before the first run because the model repository is gated:
 
@@ -97,7 +97,7 @@ huggingface-cli login
 
 For host installation, use [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install/overview). Pi-Ensemble uses separate environments because Boltz and BioEmu require incompatible dependency sets.
 
-Create the main Pi-Ensemble environment:
+Create the main Pi-Ensemble environment. This environment uses Python 3.12 because Biohub ESMFold2 requires it:
 
 ```bash
 conda env create -f environment.yml
@@ -128,9 +128,11 @@ The provided cg2all environment is CPU-only. Pi-Ensemble always runs cg2all with
 
 The host environment files mirror the container layout:
 
-- [`environment.yml`](environment.yml): main `pie` environment with Boltz, ESM, OpenMM, and the Pi-Ensemble package
-- [`environment-bioemu.yml`](environment-bioemu.yml): separate `bioemu` environment
-- [`environment-cg2all.yml`](environment-cg2all.yml): separate `cg2all` environment
+- [`environment.yml`](environment.yml): main Python 3.12 `pie` environment with Boltz, Biohub ESM/ESMFold2, OpenMM, and the Pi-Ensemble package
+- [`environment-bioemu.yml`](environment-bioemu.yml): separate Python 3.11 `bioemu` environment
+- [`environment-cg2all.yml`](environment-cg2all.yml): separate Python 3.11 `cg2all` environment
+
+ESMFold2 dependencies are installed from Biohub's GitHub ESM package rather than the generic PyPI `esm` package.
 
 When running BioEmu from a host install, the default configuration assumes the auxiliary environment is named `bioemu`. Override `bioemu_environment` in the model kwargs only if you use another name.
 

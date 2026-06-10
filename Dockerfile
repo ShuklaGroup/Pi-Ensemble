@@ -29,7 +29,7 @@ RUN curl -fsSL "https://github.com/conda-forge/miniforge/releases/latest/downloa
     conda config --system --set channel_priority strict && \
     conda clean -afy
 
-RUN conda create -y -n pie python=3.11 pip setuptools wheel && \
+RUN conda create -y -n pie python=3.12 pip setuptools wheel && \
     conda create -y -n bioemu python=3.11 pip setuptools wheel && \
     conda create -y -n cg2all python=3.11 pip setuptools wheel && \
     conda clean -afy
@@ -63,7 +63,7 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
         python-Levenshtein \
         openmm \
         boltz==2.2.0 \
-        esm \
+        "esm @ git+https://github.com/Biohub/esm.git@main" \
         cuequivariance==0.6.0 \
         cuequivariance-torch==0.6.0 \
         cuequivariance-ops-cu12==0.6.0 \
