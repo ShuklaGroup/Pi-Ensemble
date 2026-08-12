@@ -3,6 +3,13 @@
 [DataBank PLACEHOLDER]
 
 
+<p align="center">
+  <img src="AtSWEET13_pseudomsm_walk.gif" alt="Markov walk on Pi-Ensemble generated structures">
+</p>
+Animation: Markov walk on Pi-Ensemble generated structures for AtSWEET13.
+
+<br></br>
+
 Pi-Ensemble is a modular framework for generating protein sequence/structure interpolations between two template structures. The package combines:
 
 - a **structure predictor** that maps sequence -> structure
@@ -10,10 +17,6 @@ Pi-Ensemble is a modular framework for generating protein sequence/structure int
 - an **interpolation algorithm** that mixes information between two templates
 
 The code is organized under [`pie/`](pie/), with the main entrypoint in [`pie/run_pie.py`](pie/run_pie.py). Scientific context for the method will be linked here once the associated manuscript and data resources are public.
-
-<p align="center">
-  <img src="AtSWEET13_pseudomsm_walk.gif" alt="Markov walk on Pi-Ensemble generated structures">
-</p>
 
 <details close><summary><b>Table of contents</b></summary>
 
