@@ -11,7 +11,9 @@ Pi-Ensemble is a modular framework for generating protein sequence/structure int
 
 The code is organized under [`pie/`](pie/), with the main entrypoint in [`pie/run_pie.py`](pie/run_pie.py). Scientific context for the method will be linked here once the associated manuscript and data resources are public.
 
-[FRONTPAGE IMAGE]
+<p align="center">
+  <img src="AtSWEET13_pseudomsm_walk.gif" alt="Markov walk on Pi-Ensemble generated structures">
+</p>
 
 <details close><summary><b>Table of contents</b></summary>
 
