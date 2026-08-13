@@ -1,14 +1,12 @@
 # Pi-Ensemble
-[PREPRINT PLACEHOLDER]
-[DataBank PLACEHOLDER]
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-red)](https://www.biorxiv.org/content/10.1101/PLACEHOLDER)
+[![Download Data](https://img.shields.io/badge/ILLINOIS-Data_Bank-black?labelColor=FF5F05&color=13294B)](https://doi.org/10.13012/B2IDB-6902835_V1)
 
 
 <p align="center">
   <img src="AtSWEET13_pseudomsm_walk.gif" alt="Markov walk on Pi-Ensemble generated structures">
+  Animation: Markov walk on Pi-Ensemble generated structures for AtSWEET13.
 </p>
-Animation: Markov walk on Pi-Ensemble generated structures for AtSWEET13.
-
-<br></br>
 
 Pi-Ensemble is a modular framework for generating protein sequence/structure interpolations between two template structures. The package combines:
 
