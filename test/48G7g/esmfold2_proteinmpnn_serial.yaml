@@ -1,0 +1,35 @@
+structure_prediction:
+  model: "esmfold2"
+  kwargs:
+    model_name: "biohub/ESMFold2"
+    device: "cuda"
+    num_loops: 3
+    num_sampling_steps: 50
+    num_diffusion_samples: 1
+    seed: 0
+    protein_id: "A"
+
+sequence_prediction:
+  model: "proteinmpnn"
+  kwargs:
+    pmpnn_path: "/opt/ProteinMPNN/"
+    temperature: 0.1
+    seed: 1
+    batch_size: 1
+
+interpolation:
+  name: "serial"
+  kwargs:
+    ref_sequence: "QVQLQQSGAELVKPGASVKLSCTASGFNIKDTYMHWVKQRPEQGLEWIGRIDPANGNTKYDPKFQGKATITADTSSNTAYLQLSSLTSEDTAVYYCASYYGIYWGQGTTLTVSSASTKGPSVFPLAPSSKSTSGGTAALGCLVKDYFPEPVTVSWNSGALTSGVHTFPAVLQSSGLYSLSSVVTVPSSSLGTQTYICNVNHKPSNTKVDKKVEPKSC"
+    number_steps: 2
+    weight_start: 0.0
+    weight_end: 0.5
+    weight_step: 0.25
+    template_1: "test/48G7g/1AJ7_chain_B_fixed.pdb"
+    chain_id_1: "B"
+    template_2: "test/48G7g/2RCS_chain_B_fixed.pdb"
+    chain_id_2: "B"
+    outpath: "test/48G7g/output_esmfold2_proteinmpnn_serial"
+    cg2all: true
+    cg2all_environment: "cg2all"
+    minimize: true
