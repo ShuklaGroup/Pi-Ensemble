@@ -85,7 +85,7 @@ docker compose build PI-Ensemble
 Run Pi-Ensemble inside the container with:
 
 ```bash
-docker compose run --rm PI-Ensemble run_pie test/48G7g/esmfol2_proteinmpnn_serial.yaml
+docker compose run --rm PI-Ensemble run_pie test/48G7g/esmfold2_proteinmpnn_serial.yaml
 ```
 
 The Compose setup mounts the repository at `/workspace`, keeps Hugging Face downloads in the host cache, persists model caches in a named Docker volume, and reserves all available NVIDIA GPUs. The main `pie` environment uses Python 3.12 for ESMFold2 support. BioEmu is installed in a separate Python 3.11 `bioemu` Conda environment inside the image to avoid dependency conflicts with Boltz, and cg2all is kept in its own Python 3.11 environment.
