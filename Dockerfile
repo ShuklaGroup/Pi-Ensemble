@@ -63,7 +63,7 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
         python-Levenshtein \
         openmm \
         boltz==2.2.0 \
-        "esm @ git+https://github.com/Biohub/esm.git@main" \
+        "esm @ git+https://github.com/Biohub/esm.git@82ee35553d39169d678f784c8d3f8712ffd7d2c4" \
         cuequivariance==0.6.0 \
         cuequivariance-torch==0.6.0 \
         cuequivariance-ops-cu12==0.6.0 \
