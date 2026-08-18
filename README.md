@@ -1,5 +1,5 @@
 # Pi-Ensemble
-[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-red)](https://www.biorxiv.org/content/10.1101/PLACEHOLDER)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-red)](https://doi.org/10.64898/2026.08.12.744498)
 [![Download Data](https://img.shields.io/badge/ILLINOIS-Data_Bank-black?labelColor=FF5F05&color=13294B)](https://doi.org/10.13012/B2IDB-6902835_V1)
 
 
