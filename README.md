@@ -263,7 +263,19 @@ Visualization scripts will be shared soon.
 
 If you use Pi-Ensemble, please cite its associated publication as well as the models called by your config choices.
 
-[PLACEHOLDER FOR Pi-Ensemble CITATION]
+```
+@article {Nadeem2026.08.12.744498,
+	author = {Nadeem, Hassan and Kleiman, Diego E. and Zhou, Yuming and Leakey, Andrew D. B. and Shukla, Diwakar},
+	title = {Pi-Ensemble: Sequence-guided generation of interpolated protein conformational ensembles},
+	elocation-id = {2026.08.12.744498},
+	year = {2026},
+	doi = {10.64898/2026.08.12.744498},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2026/08/15/2026.08.12.744498},
+	eprint = {https://www.biorxiv.org/content/early/2026/08/15/2026.08.12.744498.full.pdf},
+	journal = {bioRxiv}
+}
+```
 
 | If your run used... | Also cite... |
 | --- | --- |
