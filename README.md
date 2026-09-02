@@ -303,3 +303,8 @@ Pi-Ensemble itself is distributed under the [MIT License](LICENSE). Model output
 ## Generative AI Acknowledgement <a name="gen-ai-ackn"></a>
 
 This repository was built with input from [Codex](https://openai.com/codex/).
+
+## Parent Repository
+
+This repository was developed from the parent repository:  
+[hnadeem2/Predicting_Interpolated_Ensemble](https://github.com/hnadeem2/Predicting_Interpolated_Ensemble)
