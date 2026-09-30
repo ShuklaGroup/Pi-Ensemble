@@ -77,7 +77,7 @@ RUN eval "$(conda shell.bash hook)" && \
         --extra-index-url https://pypi.org/simple \
         torch==2.7.1 \
         torchvision==0.22.1 && \
-    python -m pip install --no-cache-dir bioemu==1.3.1 && \
+    python -m pip install --no-cache-dir bioemu==1.3.1 tensorflow-cpu==2.18.1 dm-haiku==0.0.13 && \
     conda clean -afy
 
 RUN eval "$(conda shell.bash hook)" && \

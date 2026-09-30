@@ -52,7 +52,7 @@ class ESM3Predictor(StructurePredictor):
         elif outpath.suffix == ".cif":
             protein.to_mmcif(outpath) # type: ignore
         else:
-            raise ValueError("Unknown format for {outpath}. Use .pdb or .cif.")
+            raise ValueError(f"Unknown format for {outpath}. Use .pdb or .cif.")
 
         # Gather confidence metrics
         plddt = protein.plddt.tolist() # type: ignore

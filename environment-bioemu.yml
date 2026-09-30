@@ -12,3 +12,6 @@ dependencies:
       - torch==2.7.1
       - torchvision==0.22.1
       - bioemu==1.3.1
+      # bioemu pins jax==0.4.35 but leaves these unbounded; newer releases break with that jax.
+      - tensorflow-cpu==2.18.1
+      - dm-haiku==0.0.13

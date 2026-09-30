@@ -46,7 +46,8 @@ class SerialInterpolation(InterpolationAlgorithm):
             raise ValueError("weight_step must be positive.")
         if weight_end < weight_start:
             raise ValueError("weight_end must be greater than or equal to weight_start.")
-        self.mixing_weights = np.arange(weight_start, weight_end + (weight_step / 2.0), weight_step)
+        # Round off float drift so labels stay clean (e.g. weight_0.35, not weight_0.35000000000000003).
+        self.mixing_weights = np.round(np.arange(weight_start, weight_end + (weight_step / 2.0), weight_step), 10)
         self.structure_model = structure_model
         self.sequence_model = sequence_model
         self.outpath = Path(outpath)
@@ -173,7 +174,8 @@ class SerialInterpolation(InterpolationAlgorithm):
 
                     record = {
                         **new_struct,
-                        **mobile,
+                        **mobile,  # its "sequence" (ProteinMPNN design) overrides the folded one
+                        "folded_sequence": new_struct["sequence"],
                         "weight": weight,
                         "direction": direction,
                         "step": step,

@@ -6,7 +6,10 @@
 import argparse
 from typing import Tuple, List
 import os
+import shutil
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 import requests
 import random
@@ -34,8 +37,8 @@ def run_mmseqs2(x, prefix, use_env=True, use_filter=True,
             query += f">{n}\n{seq}\n"
             n += 1
 
+        error_count = 0
         while True:
-            error_count = 0
             try:
                 # https://requests.readthedocs.io/en/latest/user/advanced/#advanced
                 # "good practice to set connect timeouts to slightly larger than a multiple of 3"
@@ -61,8 +64,8 @@ def run_mmseqs2(x, prefix, use_env=True, use_filter=True,
         return out
 
     def status(ID):
+        error_count = 0
         while True:
-            error_count = 0
             try:
                 res = requests.get(f'{host_url}/ticket/{ID}', timeout=6.02, headers=headers)
             except requests.exceptions.Timeout:
@@ -222,8 +225,8 @@ def run_mmseqs2(x, prefix, use_env=True, use_filter=True,
                 os.mkdir(TMPL_PATH)
                 TMPL_LINE = ",".join(TMPL[:20])
                 response = None
+                error_count = 0
                 while True:
-                    error_count = 0
                     try:
                         # https://requests.readthedocs.io/en/latest/user/advanced/#advanced
                         # "good practice to set connect timeouts to slightly larger than a multiple of 3"
@@ -306,7 +309,7 @@ def query_colabfold(seqs, output_dir):
 
     # Run the MSA query script
     subprocess.run(
-        ["python", "-m", "pie.mmseqs_query", "--split", str(csv_outname), "--outdir", str(outdir)],
+        [sys.executable, "-m", "pie.mmseqs_query", "--split", str(csv_outname), "--outdir", str(outdir)],
         check=True
     )
 
@@ -328,8 +331,13 @@ if __name__ == "__main__":
     df = pd.read_csv(args.split, index_col='name')
     os.makedirs(args.outdir, exist_ok=True)
 
-    msas = run_mmseqs2(list(df.seqres), prefix='/tmp/', user_agent='ShuklaGroup/diwakar.shukla[at]shuklagroup[dot]org')
-    os.system('rm -r /tmp/_env')
+    # Per-call scratch dir: run_mmseqs2 reuses an existing {prefix}_env/out.tar.gz, so a shared
+    # fixed prefix lets concurrent or crashed runs hand back another query's MSA.
+    tmpdir = tempfile.mkdtemp(prefix="pie_mmseqs_")
+    try:
+        msas = run_mmseqs2(list(df.seqres), prefix=os.path.join(tmpdir, ""), user_agent='ShuklaGroup/diwakar.shukla[at]shuklagroup[dot]org')
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
     for name, msa in zip(df.index, msas):
             os.makedirs(f'{args.outdir}/{name}/a3m/', exist_ok=True)

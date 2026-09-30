@@ -118,6 +118,13 @@ class BoltzPredictor(StructurePredictor):
         tmp_struct_path = boltz_outdir / f"{yaml_path.stem}_model_0.{output_format}"
         tmp_confidence_path = boltz_outdir / f"confidence_{yaml_path.stem}_model_0.json"
 
+        # Boltz exits 0 even when it skips an example (e.g. CUDA out of memory).
+        if not tmp_struct_path.exists():
+            raise RuntimeError(
+                f"Boltz produced no structure for {yaml_path}; check the Boltz output above "
+                "for the failed example (e.g. 'ran out of memory, skipping batch')."
+            )
+
         shutil.copy(tmp_struct_path, outpath)
         confidence_path = outpath.with_name(f"{outpath.stem}_confidence.json")
         shutil.copy(tmp_confidence_path, confidence_path)
