@@ -284,7 +284,8 @@ class BatchInterpolation(InterpolationAlgorithm):
 
                     record: TemplateRecord = {
                         **new_struct,
-                        **seq_pred,
+                        **seq_pred,  # its "sequence" (ProteinMPNN design) overrides the folded one
+                        "folded_sequence": new_struct["sequence"],
                         "direction": direction,
                         "round": round_idx,
                         "pair_index": pair_idx,
