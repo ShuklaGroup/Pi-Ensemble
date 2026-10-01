@@ -3,6 +3,7 @@ from ..constants import PMPNN_ALPHABET
 from pathlib import Path
 from typing import Union
 import subprocess
+import sys
 import biotite.structure.io as strucio
 from biotite.structure import filter_amino_acids
 from biotite.sequence import ProteinSequence
@@ -69,7 +70,7 @@ class ProteinMPNNPredictor(SequencePredictor):
 
         # Predict sequence
         subprocess.run([
-            'python', str(self.pmpnn_path),
+            sys.executable, str(self.pmpnn_path),
             '--pdb_path', str(structure),
             '--pdb_path_chains', chain_id,
             '--out_folder', str(outpath),

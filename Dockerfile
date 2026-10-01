@@ -47,10 +47,10 @@ COPY . /opt/PI-Ensemble
 
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
     python -m pip install --no-cache-dir \
-        --index-url https://download.pytorch.org/whl/cu128 \
+        --index-url https://download.pytorch.org/whl/cu130 \
         --extra-index-url https://pypi.org/simple \
-        torch==2.7.1 \
-        torchvision==0.22.1 && \
+        torch==2.11.0 \
+        torchvision==0.26.0 && \
     python -m pip install --no-cache-dir \
         "numpy<2" \
         "mdtraj<1.11" && \
@@ -63,11 +63,11 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
         python-Levenshtein \
         openmm \
         boltz==2.2.0 \
-        "esm @ git+https://github.com/Biohub/esm.git@main" \
-        cuequivariance==0.6.0 \
-        cuequivariance-torch==0.6.0 \
-        cuequivariance-ops-cu12==0.6.0 \
-        cuequivariance-ops-torch-cu12==0.6.0
+        esm==3.4.1.post1 \
+        cuequivariance==0.12.0 \
+        cuequivariance-torch==0.12.0 \
+        cuequivariance-ops-cu13==0.12.0 \
+        cuequivariance-ops-torch-cu13==0.12.0
 
 RUN eval "$(conda shell.bash hook)" && \
     conda activate bioemu && \
@@ -77,7 +77,7 @@ RUN eval "$(conda shell.bash hook)" && \
         --extra-index-url https://pypi.org/simple \
         torch==2.7.1 \
         torchvision==0.22.1 && \
-    python -m pip install --no-cache-dir bioemu==1.3.1 && \
+    python -m pip install --no-cache-dir bioemu==1.3.1 tensorflow-cpu==2.18.1 dm-haiku==0.0.13 && \
     conda clean -afy
 
 RUN eval "$(conda shell.bash hook)" && \
@@ -85,6 +85,9 @@ RUN eval "$(conda shell.bash hook)" && \
     python -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
     python -m pip install --no-cache-dir git+https://github.com/huhlim/cg2all.git@a00b8816736c08852944f147e39164d0f5e1834e && \
     python -m pip install --no-cache-dir e3nn==0.5.1 && \
+    # cg2all downloads weights into site-packages on first use, which fails for non-root users.
+    python -c "from cg2all.lib.libconfig import MODEL_HOME; from cg2all.lib.libmodel import download_ckpt_file; download_ckpt_file('MainchainModel', MODEL_HOME / 'MainchainModel-FIX.ckpt', fix_atom=True)" && \
+    test -s /opt/conda/envs/cg2all/lib/python3.11/site-packages/cg2all/model/MainchainModel-FIX.ckpt && \
     conda clean -afy
 
 CMD ["bash"]
