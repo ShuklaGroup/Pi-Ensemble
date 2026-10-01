@@ -5,13 +5,6 @@ import json
 from .base import StructurePredictor
 
 
-# Hub revisions verified with the pinned esm package. This ESMFold2 revision bundles
-# its ESMC backbone, so one hash pins both.
-DEFAULT_HUB_REVISIONS = {
-    "biohub/ESMFold2": "69869f737beffec5294845ede23db5fc0b4f509e",
-}
-
-
 class ESMFold2Predictor(StructurePredictor):
     def __init__(self, **kwargs):
         """
@@ -20,7 +13,6 @@ class ESMFold2Predictor(StructurePredictor):
         Parameters:
             **kwargs: Model-specific parameters.
                 model_name (str): Hugging Face model name (default: "biohub/ESMFold2").
-                revision (str | None): Hub revision of model_name (default: pinned in DEFAULT_HUB_REVISIONS; None for latest).
                 device (str): "cpu" or "cuda" (default: "cpu").
                 num_loops (int): Number of recycling loops (default: 3).
                 num_sampling_steps (int): Number of diffusion sampling steps (default: 50).
@@ -29,17 +21,18 @@ class ESMFold2Predictor(StructurePredictor):
                 protein_id (str): Protein chain ID for single-sequence prediction (default: "A").
         """
         try:
-            from esm.models.esmfold2 import ESMFold2InputBuilder, EsmFold2Model, ProteinInput
+            from esm.models.esmfold2 import ESMFold2InputBuilder, ProteinInput
+            from transformers.models.esmfold2.modeling_esmfold2 import ESMFold2Model
         except Exception as err:
             raise ImportError(
-                "ESMFold2 dependencies could not be imported. Ensure esm>=3.4.1 and torch are installed."
+                "ESMFold2 dependencies could not be imported. Ensure esm, transformers, "
+                "torch, and the ESMFold2 model dependencies are installed."
             ) from err
 
         self.input_builder_cls = ESMFold2InputBuilder
         self.protein_input_cls = ProteinInput
 
         self.model_name = kwargs.get("model_name", "biohub/ESMFold2")
-        self.revision = kwargs.get("revision", DEFAULT_HUB_REVISIONS.get(self.model_name))
         self.device = kwargs.get("device", "cpu")
         self.num_loops = int(kwargs.get("num_loops", 3))
         self.num_sampling_steps = int(kwargs.get("num_sampling_steps", 50))
@@ -48,7 +41,7 @@ class ESMFold2Predictor(StructurePredictor):
         self.protein_id = kwargs.get("protein_id", "A")
 
         try:
-            self.model = EsmFold2Model.from_pretrained(self.model_name, revision=self.revision)
+            self.model = ESMFold2Model.from_pretrained(self.model_name)
             if self.device == "cuda":
                 self.model = self.model.cuda() # type: ignore
             elif hasattr(self.model, "to"):
