@@ -145,8 +145,7 @@ class SerialInterpolation(InterpolationAlgorithm):
         generated_structs = []
 
         for weight in self.mixing_weights:
-            # Round only the label: arange drift would name dirs weight_0.35000000000000003.
-            weight_label = str(round(float(weight), 10))
+            weight_label = str(float(weight))
             for direction in ['A', 'B']:
                 direction_outpath = self.outpath / f"weight_{weight_label}" / f"direction_{direction}"
 
@@ -174,8 +173,7 @@ class SerialInterpolation(InterpolationAlgorithm):
 
                     record = {
                         **new_struct,
-                        **mobile,  # its "sequence" (ProteinMPNN design) overrides the folded one
-                        "folded_sequence": new_struct["sequence"],
+                        **mobile,
                         "weight": weight,
                         "direction": direction,
                         "step": step,
