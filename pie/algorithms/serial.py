@@ -46,8 +46,7 @@ class SerialInterpolation(InterpolationAlgorithm):
             raise ValueError("weight_step must be positive.")
         if weight_end < weight_start:
             raise ValueError("weight_end must be greater than or equal to weight_start.")
-        # Round off float drift so labels stay clean (e.g. weight_0.35, not weight_0.35000000000000003).
-        self.mixing_weights = np.round(np.arange(weight_start, weight_end + (weight_step / 2.0), weight_step), 10)
+        self.mixing_weights = np.arange(weight_start, weight_end + (weight_step / 2.0), weight_step)
         self.structure_model = structure_model
         self.sequence_model = sequence_model
         self.outpath = Path(outpath)
@@ -146,7 +145,8 @@ class SerialInterpolation(InterpolationAlgorithm):
         generated_structs = []
 
         for weight in self.mixing_weights:
-            weight_label = str(float(weight))
+            # Round only the label: arange drift would name dirs weight_0.35000000000000003.
+            weight_label = str(round(float(weight), 10))
             for direction in ['A', 'B']:
                 direction_outpath = self.outpath / f"weight_{weight_label}" / f"direction_{direction}"
 
