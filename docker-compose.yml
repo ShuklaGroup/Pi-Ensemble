@@ -2,11 +2,11 @@ name: PI-Ensemble
 
 services:
   PI-Ensemble:
-    image: zcorn/pi-ensemble:cuda12.8
+    image: zcorn/pi-ensemble:cuda13.0
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: PI-Ensemble-cuda12-8
+    container_name: PI-Ensemble-cuda13-0
     working_dir: /workspace
     stdin_open: true
     tty: true
