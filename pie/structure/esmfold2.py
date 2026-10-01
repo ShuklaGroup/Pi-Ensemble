@@ -5,12 +5,10 @@ import json
 from .base import StructurePredictor
 
 
-# Last Hugging Face Hub revisions loadable by the pinned Biohub ESM/transformers stack.
-# Later `main` revisions target transformers 5.x and fail to load (ESMFold2) or load
-# with randomly initialized weights (ESMC-6B).
+# Hub revisions verified with the pinned esm package. This ESMFold2 revision bundles
+# its ESMC backbone, so one hash pins both.
 DEFAULT_HUB_REVISIONS = {
-    "biohub/ESMFold2": "1ebf0e3481a5184eb6171d40615c79e384b48796",
-    "biohub/ESMC-6B": "45b0fa5d7fb06faefbd5e3b89bdcef35d564e79a",
+    "biohub/ESMFold2": "69869f737beffec5294845ede23db5fc0b4f509e",
 }
 
 
@@ -23,7 +21,6 @@ class ESMFold2Predictor(StructurePredictor):
             **kwargs: Model-specific parameters.
                 model_name (str): Hugging Face model name (default: "biohub/ESMFold2").
                 revision (str | None): Hub revision of model_name (default: pinned in DEFAULT_HUB_REVISIONS; None for latest).
-                esmc_revision (str | None): Hub revision of the ESMC language model (default: pinned in DEFAULT_HUB_REVISIONS; None for latest).
                 device (str): "cpu" or "cuda" (default: "cpu").
                 num_loops (int): Number of recycling loops (default: 3).
                 num_sampling_steps (int): Number of diffusion sampling steps (default: 50).
@@ -32,12 +29,10 @@ class ESMFold2Predictor(StructurePredictor):
                 protein_id (str): Protein chain ID for single-sequence prediction (default: "A").
         """
         try:
-            from esm.models.esmfold2 import ESMFold2InputBuilder, ProteinInput
-            from transformers.models.esmfold2.modeling_esmfold2 import ESMFold2Model
+            from esm.models.esmfold2 import ESMFold2InputBuilder, EsmFold2Model, ProteinInput
         except Exception as err:
             raise ImportError(
-                "ESMFold2 dependencies could not be imported. Ensure esm, transformers, "
-                "torch, and the ESMFold2 model dependencies are installed."
+                "ESMFold2 dependencies could not be imported. Ensure esm>=3.4.1 and torch are installed."
             ) from err
 
         self.input_builder_cls = ESMFold2InputBuilder
@@ -45,8 +40,6 @@ class ESMFold2Predictor(StructurePredictor):
 
         self.model_name = kwargs.get("model_name", "biohub/ESMFold2")
         self.revision = kwargs.get("revision", DEFAULT_HUB_REVISIONS.get(self.model_name))
-        self.esmc_revision = kwargs.get("esmc_revision")
-        self._esmc_revision_set = "esmc_revision" in kwargs
         self.device = kwargs.get("device", "cpu")
         self.num_loops = int(kwargs.get("num_loops", 3))
         self.num_sampling_steps = int(kwargs.get("num_sampling_steps", 50))
@@ -55,17 +48,7 @@ class ESMFold2Predictor(StructurePredictor):
         self.protein_id = kwargs.get("protein_id", "A")
 
         try:
-            from huggingface_hub import snapshot_download
-
-            # load_esmc() takes no revision, so resolve the pinned ESMC snapshot to a local path.
-            self.model = ESMFold2Model.from_pretrained(
-                self.model_name, revision=self.revision, load_esmc=False
-            )
-            esmc_id = self.model.config.esmc_id
-            if not self._esmc_revision_set:
-                self.esmc_revision = DEFAULT_HUB_REVISIONS.get(esmc_id)
-            esmc_path = snapshot_download(esmc_id, revision=self.esmc_revision)
-            self.model.load_esmc(esmc_path)
+            self.model = EsmFold2Model.from_pretrained(self.model_name, revision=self.revision)
             if self.device == "cuda":
                 self.model = self.model.cuda() # type: ignore
             elif hasattr(self.model, "to"):

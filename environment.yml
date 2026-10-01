@@ -8,12 +8,12 @@ dependencies:
   - setuptools
   - wheel
   - pip:
-      - --index-url=https://download.pytorch.org/whl/cu128
+      - --index-url=https://download.pytorch.org/whl/cu130
       - --extra-index-url=https://pypi.org/simple
-      - torch==2.7.1
-      - torchvision==0.22.1
-      - numpy
-      - mdtraj
+      - torch==2.11.0
+      - torchvision==0.26.0
+      - numpy<2
+      - mdtraj<1.11
       - .
       - pyyaml
       - requests
@@ -22,8 +22,8 @@ dependencies:
       - python-Levenshtein
       - openmm
       - boltz==2.2.0
-      - esm @ git+https://github.com/Biohub/esm.git@82ee35553d39169d678f784c8d3f8712ffd7d2c4
-      - cuequivariance==0.6.0
-      - cuequivariance-torch==0.6.0
-      - cuequivariance-ops-cu12==0.6.0
-      - cuequivariance-ops-torch-cu12==0.6.0
+      - esm==3.4.1.post1
+      - cuequivariance==0.12.0
+      - cuequivariance-torch==0.12.0
+      - cuequivariance-ops-cu13==0.12.0
+      - cuequivariance-ops-torch-cu13==0.12.0

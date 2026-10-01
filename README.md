@@ -135,7 +135,7 @@ The host environment files mirror the container layout:
 - [`environment-bioemu.yml`](environment-bioemu.yml): separate Python 3.11 `bioemu` environment
 - [`environment-cg2all.yml`](environment-cg2all.yml): separate Python 3.11 `cg2all` environment
 
-ESMFold2 dependencies are installed from Biohub's GitHub ESM package rather than the generic PyPI `esm` package.
+ESM3 and ESMFold2 come from Biohub's `esm` package on PyPI (pinned to `esm==3.4.1.post1`, which includes ESMFold2). The main `pie` environment uses PyTorch 2.11 built for CUDA 13.0, so it needs an NVIDIA driver with CUDA 13 support (R580 or newer), including when running the Docker image.
 
 When running BioEmu from a host install, the default configuration assumes the auxiliary environment is named `bioemu`. Override `bioemu_environment` in the model kwargs only if you use another name.
 

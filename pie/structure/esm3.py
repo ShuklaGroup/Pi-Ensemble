@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Literal, Union
 import json
+import torch
 from esm.models.esm3 import ESM3
 from esm.sdk.api import ESM3InferenceClient, ESMProtein, GenerationConfig
 from .base import StructurePredictor
@@ -20,7 +21,11 @@ class ESM3Predictor(StructurePredictor):
         """
         self.device = kwargs.get("device", "cpu")
         try:
-            self.model: ESM3InferenceClient = ESM3.from_pretrained("esm3-open").to(self.device)
+            model = ESM3.from_pretrained("esm3-open", device=torch.device(self.device))
+            # Weights ship in bf16, which CPU matmuls reject against float32 inputs.
+            if model.device.type == "cpu":
+                model = model.float()
+            self.model: ESM3InferenceClient = model
         except Exception as err:
             print("ESM3 could not be loaded, ensure weights are available locally.")
             raise err
