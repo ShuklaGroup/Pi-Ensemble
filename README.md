@@ -65,15 +65,17 @@ Please note that installation and usage configuration may vary according to the 
 
 #### Docker
 
-Docker is the recommended path when you want the tested dependency layout without reproducing the host setup manually. The repository ships a CUDA 12.8 image definition and Compose file:
+Docker is the recommended path when you want the tested dependency layout without reproducing the host setup manually. The repository ships the image definition and Compose file:
 
 - [`Dockerfile`](Dockerfile)
 - [`docker-compose.yml`](docker-compose.yml)
 
-The published image is `zcorn/pi-ensemble:cuda12.8`. Pull it with:
+> **Requirement: NVIDIA driver R580 or newer.** The image's main `pie` environment uses PyTorch 2.11 built for CUDA 13.0, which does not run on older drivers. Check your driver with `nvidia-smi`; the reported driver version must be 580 or higher. The same requirement applies to the host installation below.
+
+The published image is `zcorn/pi-ensemble:cuda13.0`. Pull it with:
 
 ```bash
-docker pull zcorn/pi-ensemble:cuda12.8
+docker pull zcorn/pi-ensemble:cuda13.0
 ```
 
 Or build it locally with:
@@ -135,7 +137,7 @@ The host environment files mirror the container layout:
 - [`environment-bioemu.yml`](environment-bioemu.yml): separate Python 3.11 `bioemu` environment
 - [`environment-cg2all.yml`](environment-cg2all.yml): separate Python 3.11 `cg2all` environment
 
-ESM3 and ESMFold2 come from Biohub's `esm` package on PyPI (pinned to `esm==3.4.1.post1`, which includes ESMFold2). The main `pie` environment uses PyTorch 2.11 built for CUDA 13.0, so it needs an NVIDIA driver with CUDA 13 support (R580 or newer), including when running the Docker image.
+ESM3 and ESMFold2 come from Biohub's `esm` package on PyPI (pinned to `esm==3.4.1.post1`, which includes ESMFold2). The main `pie` environment uses PyTorch 2.11 built for CUDA 13.0, so it requires an NVIDIA driver R580 or newer (see the requirement under [Docker](#install)).
 
 When running BioEmu from a host install, the default configuration assumes the auxiliary environment is named `bioemu`. Override `bioemu_environment` in the model kwargs only if you use another name.
 

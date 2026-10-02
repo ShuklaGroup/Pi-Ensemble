@@ -3,7 +3,7 @@ FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 LABEL org.opencontainers.image.title="PI-Ensemble" \
-      org.opencontainers.image.description="PI-Ensemble CUDA 12.8 runtime with Boltz, ESM, ProteinMPNN, OpenMM, and cg2all"
+      org.opencontainers.image.description="PI-Ensemble (PyTorch for CUDA 13.0; requires NVIDIA driver R580+) with Boltz, ESM, ProteinMPNN, OpenMM, and cg2all"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     CONDA_DIR=/opt/conda \
